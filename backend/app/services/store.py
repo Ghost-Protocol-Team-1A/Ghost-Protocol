@@ -13,14 +13,17 @@ from app.models.domain import (
     AuditEvent,
     Case,
     CaseSummary,
+    ChangeSummary,
     Claim,
+    ClaimState,
     Conflict,
     Event,
     EvidenceItem,
     Hypothesis,
     ReviewStatus,
+    StagedItem,
 )
-from app.services.ingest import load_seed
+from app.services.ingest import load_seed, load_staged, staged_ids
 from app.services.rules import RULES, apply_findings_to_events
 
 SEEDS = ("case_001",)
@@ -29,31 +32,105 @@ SEEDS = ("case_001",)
 class CaseData:
     def __init__(self, seed_name: str) -> None:
         seed = load_seed(seed_name)
+        self.seed_name = seed_name
         self.case: Case = seed.case
         self.evidence: list[EvidenceItem] = seed.evidence
         self.claims: list[Claim] = seed.claims
         self.hypotheses: list[Hypothesis] = seed.hypotheses
         self.audit: list[AuditEvent] = seed.audit
         self.files = seed.files
-        events = seed.events
+        self.authoritative_for = seed.authoritative_for
+        self.changes: list[ChangeSummary] = []
+        self.events: list[Event] = []
+        self.conflicts: list[Conflict] = []
+        self._analyze(seed.events)
+
+    def _analyze(self, events: list[Event]) -> None:
+        """Run every rule over the current evidence. Deterministic for the same inputs."""
         findings = [
             f
             for rule in RULES
             for f in rule(
-                evidence=seed.evidence,
+                evidence=self.evidence,
                 events=events,
-                claims=seed.claims,
-                authoritative_for=seed.authoritative_for,
+                claims=self.claims,
+                authoritative_for=self.authoritative_for,
             )
         ]
         apply_findings_to_events(events, findings)
-        self.events: list[Event] = sorted(
-            events, key=lambda e: (e.normalized_time or "9999", e.id)
-        )
-        self.conflicts: list[Conflict] = [
+        self.events = sorted(events, key=lambda e: (e.normalized_time or "9999", e.id))
+        self.conflicts = [
             Conflict(id=f"C-{i:02d}", case_id=self.case.id, **f.__dict__)
             for i, f in enumerate(findings, 1)
         ]
+
+    def staged(self) -> list[StagedItem]:
+        present = {e.id for e in self.evidence}
+        items = []
+        for evidence_id in staged_ids(self.seed_name):
+            if evidence_id in present:
+                continue
+            s = load_staged(self.seed_name, evidence_id, self.case.id, "")
+            items.append(
+                StagedItem(
+                    evidence_id=evidence_id, source_name=s.evidence.source_name, summary=s.summary
+                )
+            )
+        return items
+
+    def add_staged(self, evidence_id: str, at: str) -> ChangeSummary:
+        """Add held-back evidence, re-run the analysis, and record what changed."""
+        staged = load_staged(self.seed_name, evidence_id, self.case.id, at)
+        before_conflicts = {c.id: c.explanation for c in self.conflicts}
+        before_events = {e.id: e.state for e in self.events}
+        before_claims = {c.id: c.state for c in self.claims}
+
+        self.evidence.append(staged.evidence)
+        self.claims.extend(staged.claims)
+        for h in self.hypotheses:
+            note = staged.hypothesis_notes.get(h.id)
+            if note:
+                h.notes = f"{h.notes} {note}"
+        self._analyze(self.events + staged.events)
+
+        after_conflicts = {c.id: c.explanation for c in self.conflicts}
+        changes = [
+            f"{e.id}: {before_events[e.id].value} → {e.state.value}"
+            for e in self.events
+            if e.id in before_events and before_events[e.id] is not e.state
+        ] + [
+            f"{c.id}: {before_claims[c.id].value} → {c.state.value}"
+            for c in self.claims
+            if c.id in before_claims and before_claims[c.id] is not c.state
+        ]
+        unchanged = [
+            f"{c.id} still {c.state.value}: {c.statement}"
+            for c in self.claims
+            if c.id in before_claims
+            and before_claims[c.id] is c.state
+            and c.state is ClaimState.UNRESOLVED
+        ]
+        same_conflicts = [
+            cid for cid, text in before_conflicts.items() if after_conflicts.get(cid) == text
+        ]
+        if same_conflicts:
+            unchanged.append(f"Conflicts unchanged: {', '.join(same_conflicts)}")
+
+        summary = ChangeSummary(
+            id=f"CH-{len(self.changes) + 1:02d}",
+            case_id=self.case.id,
+            at=at,
+            trigger=f"Added {staged.evidence.id} · {staged.evidence.source_name}",
+            added_evidence=[staged.evidence.id],
+            added_events=[e.id for e in staged.events],
+            added_claims=[c.id for c in staged.claims],
+            conflicts_added=sorted(set(after_conflicts) - set(before_conflicts)),
+            conflicts_removed=sorted(set(before_conflicts) - set(after_conflicts)),
+            state_changes=changes,
+            unchanged=unchanged,
+        )
+        self.changes.append(summary)
+        return summary
 
     def original_rows(self, evidence_id: str) -> tuple[str, list[str], list[dict[str, str]]] | None:
         """Read-only view of an original log file: (filename, columns, rows)."""
@@ -85,13 +162,17 @@ class Store:
             data = CaseData(name)
             self.cases[data.case.id] = data
 
+    @staticmethod
+    def now() -> str:
+        return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
     def record(self, case_id: str, actor: str, action: str, entity_ref: str, details: str) -> None:
         data = self.cases[case_id]
         data.audit.append(
             AuditEvent(
                 id=f"A-{len(data.audit) + 1:03d}",
                 case_id=case_id,
-                at=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                at=self.now(),
                 actor=actor,
                 action=action,
                 entity_ref=entity_ref,
