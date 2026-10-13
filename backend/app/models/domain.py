@@ -166,6 +166,16 @@ class AuditEvent(BaseModel):
     details: str
 
 
+class OriginalRecord(BaseModel):
+    """Read-only copy of an original log file, exactly as ingested."""
+
+    evidence_id: str
+    filename: str
+    sha256: str | None
+    columns: list[str]
+    rows: list[dict[str, str]]
+
+
 class CaseSummary(BaseModel):
     case: Case
     evidence_count: int

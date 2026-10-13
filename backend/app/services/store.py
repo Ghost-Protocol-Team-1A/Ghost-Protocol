@@ -6,6 +6,7 @@ state. A database-backed store can replace this behind the same methods.
 
 from __future__ import annotations
 
+import csv
 from datetime import UTC, datetime
 
 from app.models.domain import (
@@ -33,6 +34,7 @@ class CaseData:
         self.claims: list[Claim] = seed.claims
         self.hypotheses: list[Hypothesis] = seed.hypotheses
         self.audit: list[AuditEvent] = seed.audit
+        self.files = seed.files
         events = seed.events
         findings = [
             f
@@ -52,6 +54,16 @@ class CaseData:
             Conflict(id=f"C-{i:02d}", case_id=self.case.id, **f.__dict__)
             for i, f in enumerate(findings, 1)
         ]
+
+    def original_rows(self, evidence_id: str) -> tuple[str, list[str], list[dict[str, str]]] | None:
+        """Read-only view of an original log file: (filename, columns, rows)."""
+        path = self.files.get(evidence_id)
+        if path is None:
+            return None
+        with path.open(newline="", encoding="utf-8") as fh:
+            reader = csv.DictReader(fh)
+            rows = list(reader)
+            return path.name, list(reader.fieldnames or []), rows
 
     def summary(self) -> CaseSummary:
         return CaseSummary(

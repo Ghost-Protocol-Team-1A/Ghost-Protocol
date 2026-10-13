@@ -41,6 +41,7 @@ class SeedCase:
     hypotheses: list[Hypothesis]
     audit: list[AuditEvent]
     authoritative_for: dict[str, list[str]] = field(default_factory=dict)
+    files: dict[str, Path] = field(default_factory=dict)
 
 
 def _in_window(ts: str, start: datetime, end: datetime) -> bool:
@@ -179,4 +180,6 @@ def load_seed(name: str = "case_001") -> SeedCase:
     audit = [
         AuditEvent(id=f"A-{i:03d}", case_id=case.id, **a) for i, a in enumerate(data["audit"], 1)
     ]
-    return SeedCase(case, subject_asset, evidence, events, claims, hypotheses, audit, authoritative)
+    return SeedCase(
+        case, subject_asset, evidence, events, claims, hypotheses, audit, authoritative, files
+    )
