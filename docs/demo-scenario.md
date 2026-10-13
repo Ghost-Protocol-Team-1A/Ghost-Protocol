@@ -35,12 +35,17 @@ Sorted by normalized time.
 
 | Event  | Source locator          | Source time | Normalized time | Rule applied            | Claim state  |
 | ------ | ----------------------- | ----------- | --------------- | ----------------------- | ------------ |
+| EV-001 | E-05 · row 3            | 21:00:00    | 21:00:00        | none                    | Supported    |
 | EV-009 | E-05 · row 7            | 21:09:00    | 21:09:00        | none                    | Contradicted |
 | EV-011 | E-01 · timecode 00:14   | 21:10:00    | 21:10:00        | none                    | Supported    |
 | EV-012 | E-04 · row 18           | 21:12:00    | 21:12:00        | none                    | Supported    |
 | EV-014 | E-02 · timecode 00:39   | **21:16:00**| **21:14:00**    | offset −120 s (E-02)    | Supported    |
 | EV-016 | E-03 · timecode 00:52   | 21:16:00    | 21:16:00        | none                    | Inferred     |
 | EV-018 | E-06 · page 2, para 3   | ~21:18      | 21:16–21:20     | approximate window ±2 min | Unresolved |
+| EV-020 | E-05 · row 12           | 22:00:00    | 22:00:00        | none                    | Supported    |
+
+Which log rows become events: access-log rows inside the incident window (21:00–22:00), and
+inventory rows inside the window that concern the case asset EQ-4471 or are door events.
 
 The source time is never overwritten. Normalized time is a separate, derived field with the
 rule that produced it.
@@ -51,7 +56,7 @@ rule that produced it.
 | ---- | ------------- | -------------------- | -------- | ------------------ | ----------- |
 | C-01 | RULE-DUP-001  | Copied log record    | High     | E-04 r18, E-05 r7  | E-05 row 7 matches E-04 row 18 on badge, door and event code but is stamped 21:09:00, before the first person enters at 21:10:00. Possible copy or import error. **Not proof of tampering.** |
 | C-02 | RULE-TIME-001 | Clock offset         | Medium   | E-02 (vs E-01, E-04) | E-02 clock runs 120 s fast. Source 21:16:00 normalizes to 21:14:00. In the demo the offset is declared in the fixture metadata; the UI must say so. |
-| C-03 | RULE-CLAIM-001| Identity not established | Review | E-01, E-04         | The person in E-01 cannot be linked to badge B-117 from the available evidence. |
+| C-03 | RULE-CLAIM-001| Identity not established | Review | — (claim CL-04)    | The person in E-01 cannot be linked to badge B-117 from the available evidence. |
 
 ## Claims
 
