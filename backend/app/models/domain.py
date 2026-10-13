@@ -176,6 +176,28 @@ class OriginalRecord(BaseModel):
     rows: list[dict[str, str]]
 
 
+class StagedItem(BaseModel):
+    evidence_id: str
+    source_name: str
+    summary: str
+
+
+class ChangeSummary(BaseModel):
+    """What adding evidence changed, and what it did not."""
+
+    id: str
+    case_id: str
+    at: str
+    trigger: str
+    added_evidence: list[str]
+    added_events: list[str]
+    added_claims: list[str]
+    conflicts_added: list[str]
+    conflicts_removed: list[str]
+    state_changes: list[str]
+    unchanged: list[str]
+
+
 class CaseSummary(BaseModel):
     case: Case
     evidence_count: int
