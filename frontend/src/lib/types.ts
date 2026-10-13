@@ -85,6 +85,7 @@ export interface Claim {
 export interface Hypothesis {
   id: string;
   case_id: string;
+  conflict_id: string | null;
   question: string;
   description: string;
   state: ClaimState;

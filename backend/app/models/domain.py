@@ -148,6 +148,7 @@ class Claim(BaseModel):
 class Hypothesis(BaseModel):
     id: str
     case_id: str
+    conflict_id: str | None = Field(default=None, description="Conflict this hypothesis explains")
     question: str
     description: str
     state: ClaimState

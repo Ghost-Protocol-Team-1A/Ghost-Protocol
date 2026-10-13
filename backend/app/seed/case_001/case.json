@@ -161,6 +161,7 @@
   "hypotheses": [
     {
       "id": "H-01",
+      "conflict_id": "C-01",
       "question": "Why does E-05 record a door event at 21:09:00?",
       "description": "The copied row is an import artifact",
       "state": "inferred",
@@ -172,6 +173,7 @@
     },
     {
       "id": "H-02",
+      "conflict_id": "C-01",
       "question": "Why does E-05 record a door event at 21:09:00?",
       "description": "The copied row was edited after export",
       "state": "unresolved",
@@ -180,6 +182,7 @@
     },
     {
       "id": "H-03",
+      "conflict_id": "C-01",
       "question": "Why does E-05 record a door event at 21:09:00?",
       "description": "A genuine second door event at 21:09",
       "state": "contradicted",
