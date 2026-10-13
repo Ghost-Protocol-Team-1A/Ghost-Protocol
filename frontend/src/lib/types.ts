@@ -111,6 +111,26 @@ export interface OriginalRecord {
   rows: Record<string, string>[];
 }
 
+export interface StagedItem {
+  evidence_id: string;
+  source_name: string;
+  summary: string;
+}
+
+export interface ChangeSummary {
+  id: string;
+  case_id: string;
+  at: string;
+  trigger: string;
+  added_evidence: string[];
+  added_events: string[];
+  added_claims: string[];
+  conflicts_added: string[];
+  conflicts_removed: string[];
+  state_changes: string[];
+  unchanged: string[];
+}
+
 export interface ApiErrorBody {
   error: { code: string; message: string; details: Record<string, unknown> };
 }

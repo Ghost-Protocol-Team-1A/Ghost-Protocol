@@ -2,11 +2,13 @@ import type {
   ApiErrorBody,
   AuditEvent,
   CaseSummary,
+  ChangeSummary,
   Claim,
   Conflict,
   EvidenceItem,
   Hypothesis,
   OriginalRecord,
+  StagedItem,
   TimelineEvent,
 } from "./types";
 
@@ -22,8 +24,8 @@ export class ApiError extends Error {
   }
 }
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { cache: "no-store" });
+async function request<T>(path: string, method: "GET" | "POST" = "GET"): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method, cache: "no-store" });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
     throw new ApiError(
@@ -35,6 +37,8 @@ async function get<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+const get = <T>(path: string) => request<T>(path);
+
 export const api = {
   cases: () => get<CaseSummary[]>("/api/cases"),
   case: (id: string) => get<CaseSummary>(`/api/cases/${id}`),
@@ -44,6 +48,11 @@ export const api = {
   claims: (id: string) => get<Claim[]>(`/api/cases/${id}/claims`),
   hypotheses: (id: string) => get<Hypothesis[]>(`/api/cases/${id}/hypotheses`),
   audit: (id: string) => get<AuditEvent[]>(`/api/cases/${id}/audit`),
+  staged: (id: string) => get<StagedItem[]>(`/api/cases/${id}/staged`),
+  changes: (id: string) => get<ChangeSummary[]>(`/api/cases/${id}/changes`),
+  addStaged: (id: string, evidenceId: string) =>
+    request<ChangeSummary>(`/api/cases/${id}/staged/${evidenceId}`, "POST"),
+  resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
   /** Original log rows, or null when the item has no stored file (simulated extraction). */
   original: async (id: string, evidenceId: string): Promise<OriginalRecord | null> => {
     try {
