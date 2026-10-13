@@ -66,3 +66,10 @@ def test_analysis_is_deterministic():
     a, b = case(), case()
     assert [e.model_dump() for e in a.events] == [e.model_dump() for e in b.events]
     assert [c.model_dump() for c in a.conflicts] == [c.model_dump() for c in b.conflicts]
+
+
+def test_hypotheses_point_at_an_existing_conflict():
+    data = case()
+    conflict_ids = {c.id for c in data.conflicts}
+    for h in data.hypotheses:
+        assert h.conflict_id in conflict_ids, h.id
