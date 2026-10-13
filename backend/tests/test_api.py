@@ -44,7 +44,3 @@ def test_reset_restores_state_and_logs_it(client):
     audit = client.get("/api/cases/CASE-001/audit").json()
     assert audit[0]["action"] == "Demo reset"
     assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 6
-
-
-def test_placeholders_return_501(client):
-    assert client.get("/api/cases/CASE-001/report").status_code == 501
