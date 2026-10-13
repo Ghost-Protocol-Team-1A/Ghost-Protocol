@@ -30,3 +30,6 @@ backend/data/
 .DS_Store
 .idea/
 .vscode/
+
+# Local tooling
+.claude/
