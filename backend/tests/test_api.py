@@ -62,3 +62,28 @@ def test_simulated_evidence_has_no_original(client):
     res = client.get("/api/cases/CASE-001/evidence/E-02/original")
     assert res.status_code == 404
     assert res.json()["error"]["code"] == "original_not_available"
+
+
+def test_live_evidence_reports_what_changed_and_what_did_not(client):
+    assert [s["evidence_id"] for s in client.get("/api/cases/CASE-001/staged").json()] == ["E-07"]
+
+    res = client.post("/api/cases/CASE-001/staged/E-07")
+    assert res.status_code == 201
+    change = res.json()
+    assert change["added_evidence"] == ["E-07"]
+    assert change["added_claims"] == ["CL-07"]
+    assert change["conflicts_added"] == [] and change["conflicts_removed"] == []
+    assert any(u.startswith("CL-06 still unresolved") for u in change["unchanged"])
+    assert "Conflicts unchanged: C-01, C-02, C-03" in change["unchanged"]
+
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 7
+    assert client.get("/api/cases/CASE-001/staged").json() == []
+    assert client.post("/api/cases/CASE-001/staged/E-07").status_code == 409
+    assert len(client.get("/api/cases/CASE-001/changes").json()) == 1
+
+
+def test_reset_removes_live_evidence(client):
+    client.post("/api/cases/CASE-001/staged/E-07")
+    client.post("/api/demo/reset")
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 6
+    assert client.get("/api/cases/CASE-001/changes").json() == []
