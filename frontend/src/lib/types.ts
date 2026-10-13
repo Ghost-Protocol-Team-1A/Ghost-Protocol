@@ -103,6 +103,14 @@ export interface AuditEvent {
   details: string;
 }
 
+export interface OriginalRecord {
+  evidence_id: string;
+  filename: string;
+  sha256: string | null;
+  columns: string[];
+  rows: Record<string, string>[];
+}
+
 export interface ApiErrorBody {
   error: { code: string; message: string; details: Record<string, unknown> };
 }

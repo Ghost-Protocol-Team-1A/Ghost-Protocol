@@ -6,6 +6,7 @@ import type {
   Conflict,
   EvidenceItem,
   Hypothesis,
+  OriginalRecord,
   TimelineEvent,
 } from "./types";
 
@@ -43,6 +44,15 @@ export const api = {
   claims: (id: string) => get<Claim[]>(`/api/cases/${id}/claims`),
   hypotheses: (id: string) => get<Hypothesis[]>(`/api/cases/${id}/hypotheses`),
   audit: (id: string) => get<AuditEvent[]>(`/api/cases/${id}/audit`),
+  /** Original log rows, or null when the item has no stored file (simulated extraction). */
+  original: async (id: string, evidenceId: string): Promise<OriginalRecord | null> => {
+    try {
+      return await get<OriginalRecord>(`/api/cases/${id}/evidence/${evidenceId}/original`);
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "original_not_available") return null;
+      throw err;
+    }
+  },
 };
 
 /** Format a UTC ISO time as site-local HH:MM:SS (UTC+01:00 for the demo case). */
