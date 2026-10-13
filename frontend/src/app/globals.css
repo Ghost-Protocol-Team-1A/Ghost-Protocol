@@ -1,0 +1,26 @@
+@import "../styles/tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--gp-obsidian);
+  color: var(--gp-text);
+  font-family: var(--gp-font);
+  font-size: var(--gp-text-md);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--gp-cyan);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--gp-focus);
+  border-radius: 4px;
+}

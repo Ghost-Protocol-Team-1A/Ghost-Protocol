@@ -1,0 +1,48 @@
+/* Design tokens from the Figma brand board (frame 70:2) and design system (frame 48:1127).
+   Use these variables; do not add new hex colors in components. */
+
+:root {
+  /* Surfaces */
+  --gp-obsidian: #090c11;
+  --gp-graphite: #11161c;
+  --gp-surface: #121720;
+  --gp-surface-raised: #171f2b;
+  --gp-border: #384557;
+
+  /* Text */
+  --gp-text: #edf2fa;
+  --gp-text-muted: #9eadbf;
+  --gp-text-subtle: #7a8fa6;
+
+  /* Brand accents */
+  --gp-lime: #b8f54a;
+  --gp-cyan: #40d1e0;
+  --gp-teal: #2eccb0;
+  --gp-coral: #ff5c52;
+  --gp-gold: #fab54f;
+  --gp-blue: #61a3fa;
+
+  /* Claim states — always pair the color with the text label */
+  --gp-state-supported: var(--gp-lime);
+  --gp-state-contradicted: var(--gp-coral);
+  --gp-state-inferred: var(--gp-blue);
+  --gp-state-unresolved: var(--gp-gold);
+
+  /* Type */
+  --gp-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gp-text-xs: 0.6875rem;
+  --gp-text-sm: 0.8125rem;
+  --gp-text-md: 0.9375rem;
+  --gp-text-lg: 1.25rem;
+  --gp-text-xl: 1.75rem;
+
+  /* Spacing and shape */
+  --gp-space-1: 4px;
+  --gp-space-2: 8px;
+  --gp-space-3: 12px;
+  --gp-space-4: 16px;
+  --gp-space-6: 24px;
+  --gp-space-8: 32px;
+  --gp-radius: 8px;
+  --gp-focus: 0 0 0 2px var(--gp-obsidian), 0 0 0 4px var(--gp-cyan);
+}
