@@ -1,0 +1,200 @@
+{
+  "_notice": "FICTIONAL DEMO DATA. No real people, places or events. Must match docs/demo-scenario.md.",
+  "case": {
+    "id": "CASE-001",
+    "title": "Warehouse equipment incident",
+    "description": "Asset EQ-4471 recorded as secured at 21:00 and found missing at 22:00.",
+    "incident_start": "2026-10-10T21:00:00+01:00",
+    "incident_end": "2026-10-10T22:00:00+01:00",
+    "status": "active",
+    "fictional": true,
+    "subject_asset": "EQ-4471"
+  },
+  "ingested_at": "2026-10-11T09:00:00Z",
+  "evidence": [
+    {
+      "id": "E-01",
+      "type": "video",
+      "source_name": "Entrance CCTV",
+      "original_filename": "entrance_cam_2110.mp4",
+      "clock": {"offset_seconds": 0, "method": "reference_clock", "note": "NTP-synced recorder"}
+    },
+    {
+      "id": "E-02",
+      "type": "video",
+      "source_name": "Loading-bay CCTV",
+      "original_filename": "bay_cam_2116.mp4",
+      "clock": {
+        "offset_seconds": 120,
+        "method": "declared_in_fixture_metadata",
+        "note": "Seeded demo assumption: recorder clock runs 120 s fast against the NTP reference."
+      }
+    },
+    {
+      "id": "E-03",
+      "type": "audio",
+      "source_name": "Door alarm audio",
+      "original_filename": "alarm_panel_2116.wav",
+      "clock": {"offset_seconds": 0, "method": "reference_clock", "note": "Alarm panel on NTP"}
+    },
+    {
+      "id": "E-04",
+      "type": "csv",
+      "source_name": "Door access log",
+      "original_filename": "E-04_door_access_log.csv",
+      "file": "E-04_door_access_log.csv",
+      "authoritative_for": ["DOOR_OPEN", "DOOR_CLOSE"],
+      "clock": {"offset_seconds": 0, "method": "reference_clock", "note": "Access controller on NTP"}
+    },
+    {
+      "id": "E-05",
+      "type": "csv",
+      "source_name": "Inventory event log",
+      "original_filename": "E-05_inventory_event_log.csv",
+      "file": "E-05_inventory_event_log.csv",
+      "authoritative_for": ["SECURED", "MISSING", "CHECKED_IN", "CHECKED_OUT", "COUNTED", "RETURNED"],
+      "clock": {"offset_seconds": 0, "method": "reference_clock", "note": "Inventory server on NTP"}
+    },
+    {
+      "id": "E-06",
+      "type": "pdf",
+      "source_name": "Witness statement",
+      "original_filename": "worker_statement.pdf",
+      "clock": {"offset_seconds": 0, "method": "approximate_human_estimate", "note": "Times are the witness's estimates"}
+    }
+  ],
+  "event_ids": {
+    "E-05:3": "EV-001",
+    "E-05:7": "EV-009",
+    "E-04:18": "EV-012",
+    "E-05:12": "EV-020"
+  },
+  "row_descriptions": {
+    "DOOR_OPEN": "{door} door opens (badge {badge_id})",
+    "SECURED": "{asset_id} recorded as secured",
+    "MISSING": "{asset_id} recorded as missing"
+  },
+  "metadata_events": [
+    {
+      "id": "EV-011",
+      "evidence_id": "E-01",
+      "locator": "timecode 00:14",
+      "description": "Person enters loading area",
+      "source_time": "2026-10-10T21:10:00+01:00"
+    },
+    {
+      "id": "EV-014",
+      "evidence_id": "E-02",
+      "locator": "timecode 00:39",
+      "description": "Trolley moves through bay; object on trolley obscured",
+      "source_time": "2026-10-10T21:16:00+01:00"
+    },
+    {
+      "id": "EV-016",
+      "evidence_id": "E-03",
+      "locator": "timecode 00:52",
+      "description": "Door alarm sounds; likely the loading-bay door",
+      "source_time": "2026-10-10T21:16:00+01:00",
+      "interpretation": true
+    },
+    {
+      "id": "EV-018",
+      "evidence_id": "E-06",
+      "locator": "page 2, para 3",
+      "description": "Worker reports hearing movement near the bay",
+      "source_time": "2026-10-10T21:18:00+01:00",
+      "approximate_seconds": 120
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-01",
+      "statement": "The loading-bay door opened at 21:12:00",
+      "state": "supported",
+      "rationale": "Recorded directly in the access log; no cited source conflicts.",
+      "links": [{"evidence_id": "E-04", "locator": "row 18", "relationship": "supports"}]
+    },
+    {
+      "id": "CL-02",
+      "statement": "A trolley moved through the bay at 21:14:00",
+      "state": "supported",
+      "rationale": "Recorded on E-02; time normalized for the declared 120 s clock offset.",
+      "links": [{"evidence_id": "E-02", "locator": "timecode 00:39", "relationship": "supports"}]
+    },
+    {
+      "id": "CL-03",
+      "statement": "The 21:16 alarm came from the loading-bay door",
+      "state": "inferred",
+      "rationale": "The alarm audio does not name the door; the link relies on E-03 and E-04 together.",
+      "links": [
+        {"evidence_id": "E-03", "locator": "timecode 00:52", "relationship": "supports"},
+        {"evidence_id": "E-04", "locator": "row 18", "relationship": "supports"}
+      ]
+    },
+    {
+      "id": "CL-04",
+      "kind": "identity",
+      "statement": "The person in E-01 is the holder of badge B-117",
+      "state": "unresolved",
+      "rationale": "No source links the person on camera to a badge.",
+      "links": []
+    },
+    {
+      "id": "CL-05",
+      "statement": "A separate door event happened at 21:09:00",
+      "state": "contradicted",
+      "rationale": "Only the copied row in E-05 records it; the original access log and entrance camera conflict.",
+      "links": [
+        {"evidence_id": "E-05", "locator": "row 7", "relationship": "supports"},
+        {"evidence_id": "E-04", "locator": "rows 17-18", "relationship": "contradicts"},
+        {"evidence_id": "E-01", "locator": "timecode 00:14", "relationship": "contradicts"}
+      ]
+    },
+    {
+      "id": "CL-06",
+      "statement": "EQ-4471 was on the trolley",
+      "state": "unresolved",
+      "rationale": "The object on the trolley is obscured in E-02.",
+      "links": []
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "H-01",
+      "question": "Why does E-05 record a door event at 21:09:00?",
+      "description": "The copied row is an import artifact",
+      "state": "inferred",
+      "notes": "Field-for-field match with E-04 row 18 except time; import job log not available.",
+      "links": [
+        {"evidence_id": "E-05", "locator": "row 7", "relationship": "supports"},
+        {"evidence_id": "E-04", "locator": "row 18", "relationship": "supports"}
+      ]
+    },
+    {
+      "id": "H-02",
+      "question": "Why does E-05 record a door event at 21:09:00?",
+      "description": "The copied row was edited after export",
+      "state": "unresolved",
+      "notes": "E-05 has no edit history; this can be neither confirmed nor ruled out.",
+      "links": []
+    },
+    {
+      "id": "H-03",
+      "question": "Why does E-05 record a door event at 21:09:00?",
+      "description": "A genuine second door event at 21:09",
+      "state": "contradicted",
+      "notes": "E-04 has no 21:09 row; E-01 shows no entry before 21:10.",
+      "links": [
+        {"evidence_id": "E-04", "locator": "rows 17-18", "relationship": "contradicts"},
+        {"evidence_id": "E-01", "locator": "timecode 00:14", "relationship": "contradicts"}
+      ]
+    }
+  ],
+  "audit": [
+    {"at": "2026-10-11T09:00:00Z", "actor": "BJ", "action": "Case created", "entity_ref": "CASE-001", "details": "Fictional demo case"},
+    {"at": "2026-10-11T09:02:19Z", "actor": "BJ", "action": "Evidence ingested", "entity_ref": "E-01", "details": "entrance_cam_2110.mp4"},
+    {"at": "2026-10-11T09:20:03Z", "actor": "BJ", "action": "Time assumption recorded", "entity_ref": "E-02", "details": "Camera offset +120 s (declared)"},
+    {"at": "2026-10-11T09:31:42Z", "actor": "SYS", "action": "Conflict created", "entity_ref": "C-01", "details": "RULE-DUP-001"},
+    {"at": "2026-10-11T10:02:11Z", "actor": "BJ", "action": "Evidence ingested", "entity_ref": "E-06", "details": "worker_statement.pdf"}
+  ]
+}
