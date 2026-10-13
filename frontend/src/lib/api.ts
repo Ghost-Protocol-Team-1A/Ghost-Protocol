@@ -53,6 +53,17 @@ export const api = {
   addStaged: (id: string, evidenceId: string) =>
     request<ChangeSummary>(`/api/cases/${id}/staged/${evidenceId}`, "POST"),
   resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
+  /** Whether the report export endpoint is implemented (it returns 501 until it is). */
+  reportAvailable: async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${BASE}/api/cases/${id}/report?format=json`, { cache: "no-store" });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+  /** Browser download URL for the exported report. */
+  reportUrl: (id: string, format: "md" | "json") => `${BASE}/api/cases/${id}/report?format=${format}`,
   /** Original log rows, or null when the item has no stored file (simulated extraction). */
   original: async (id: string, evidenceId: string): Promise<OriginalRecord | null> => {
     try {
