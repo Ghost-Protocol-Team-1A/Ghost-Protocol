@@ -10,16 +10,25 @@ normalization, conflict rules, claims and hypotheses, the API, the workstation s
 report builder), all Figma design, and final integration. Tasks below plug into that core
 through the contracts named in each task.
 
-**When can you start?** Each task lists its *start signal*. Docs and research tasks can start
-immediately. Code tasks start when the lead announces the scaffold in the issue (target: end of
-Day 1). Until then, read the scenario and the Figma frame for your task.
+**Everyone starts now.** The skeleton is on `main`: the shared models
+(`backend/app/models/domain.py`, `frontend/src/lib/types.ts`), the live read API for CASE-001,
+the design tokens, and a placeholder file for every task below. You fill in your own files; you
+never need to wait for another teammate.
+
+### How we avoid conflicts
+
+- **Separate files.** Each task owns the paths listed under it. Two people never edit the same file.
+- **Contracts are frozen.** `domain.py`, `types.ts`, `tokens.css` and the API routes in `cases.py` change only through the lead. If you need a field, ask in your issue; the lead adds it to `main` the same day.
+- **Short-lived branches.** Branch from the latest `main`, open a draft PR on your first push, and keep it open while you work. Before asking for review: `git fetch origin && git rebase origin/main`.
+- **Pull `main` every morning.** That keeps everyone's copy close to everyone else's.
+- **Code tasks run against the real API.** Start the backend locally (see README → Running locally). Nothing needs mocking.
 
 ---
 
 ## 1. Report export — @Riel101
 
 **Branch:** `riel101/report-export`
-**Start signal:** domain models and CASE-001 seed are on `main`.
+**Start:** now. Placeholder: `backend/app/api/routes/report.py` returns 501 until you replace it.
 
 Build the investigation report as a downloadable file, in Markdown and JSON.
 
@@ -57,7 +66,7 @@ Build the investigation report as a downloadable file, in Markdown and JSON.
 ## 2. Evidence upload checks — @mallison031
 
 **Branch:** `mallison031/upload-validation`
-**Start signal:** the evidence model and upload route stub are on `main`.
+**Start:** now. Signatures to implement are in `backend/app/storage/hashing.py` and `validation.py`.
 
 Make evidence upload safe and provable: validate files, hash the original bytes, never trust the
 filename.
@@ -91,14 +100,13 @@ filename.
 ## 3. Blind-test case — @Aycode01
 
 **Branch:** `aycode01/blind-test-case`
-**Start signal:** the seed file format for CASE-001 is on `main`. You can write the scenario and
-expected answers immediately.
+**Start:** now. Copy the layout of `backend/app/seed/case_001/` (a `case.json` plus CSV files) into `backend/app/seed/case_002/`.
 
 Prove the engine works on a case it was not built around.
 
 **You own these paths**
 - `docs/blind-test.md`
-- `backend/app/seed/case_002.json`
+- `backend/app/seed/case_002/` (`case.json` + CSV files)
 - `backend/tests/test_blind_case.py`
 
 **What to build**
@@ -107,8 +115,8 @@ Prove the engine works on a case it was not built around.
    - one source whose clock is **90 s slow** (normalized = source **+** 90 s);
    - one row copied between two logs with a different timestamp;
    - one approximate witness time.
-2. Second commit: encode it as `case_002.json` in the same format as CASE-001.
-3. Third commit: tests that load CASE-002, run the engine and compare against your expected
+2. Second commit: encode it in `backend/app/seed/case_002/` in the same format as CASE-001.
+3. Third commit: tests that load it with `CaseData("case_002")`, run the engine and compare against your expected
    answers.
 
 **Acceptance criteria**
@@ -122,7 +130,7 @@ Prove the engine works on a case it was not built around.
 ## 4. Audit trail page — @Blessed-Femi
 
 **Branch:** `blessed-femi/audit-trail-page`
-**Start signal:** the app shell, design tokens and `GET /api/cases/{id}/audit` are on `main`.
+**Start:** now. Data: `api.audit(caseId)` in `frontend/src/lib/api.ts`; the live endpoint is `GET /api/cases/CASE-001/audit`.
 
 **You own these paths**
 - `frontend/src/app/(workstation)/cases/[caseId]/audit/page.tsx`
@@ -147,8 +155,7 @@ Prove the engine works on a case it was not built around.
 ## 5. Public pages: Contact and Pricing — @Waffiyyi
 
 **Branch:** `waffiyyi/contact-pricing`
-**Start signal:** the site layout (header, footer) and design tokens are on `main`. You can
-study Figma now.
+**Start:** now. The site header, footer and tokens are in `frontend/src/app/(site)/layout.tsx` and `frontend/src/styles/tokens.css`.
 
 **You own these paths**
 - `frontend/src/app/(site)/contact/page.tsx`
@@ -175,7 +182,7 @@ study Figma now.
 ## 6. Continuous integration — @Orah-dev
 
 **Branch:** `orah-dev/ci`
-**Start signal:** the backend and frontend scaffold are on `main`.
+**Start:** now. The exact commands to run are in README → Running locally → Checks.
 
 **You own these paths**
 - `.github/workflows/ci.yml`
@@ -184,7 +191,7 @@ study Figma now.
 **What to build**
 - A workflow that runs on every pull request and on pushes to `main`:
   - **backend:** Python 3.12, install `backend` with dev dependencies, `ruff check`, `pytest`.
-  - **frontend:** Node 22, `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build`.
+  - **frontend:** Node 22, `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
 - Cache pip and npm. Run the backend and frontend jobs in parallel. Skip a job when its folder
   did not change.
 - `docs/ci.md`: what runs, how to run the same commands locally, how to read a failure.
@@ -199,7 +206,7 @@ study Figma now.
 ## 7. Demo script and evaluation — @DANTE-1903
 
 **Branch:** `dante-1903/demo-and-evaluation`
-**Start signal:** now. The scenario is locked in `docs/demo-scenario.md`.
+**Start:** now.
 
 **You own these paths**
 - `docs/demo-script.md`
