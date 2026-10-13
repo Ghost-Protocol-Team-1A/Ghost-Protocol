@@ -14,7 +14,7 @@ export default function Home() {
         flags contradictions with the rule that found them, and never presents an inference as
         a fact.
       </p>
-      <Link href="/cases/CASE-001/timeline">Open the fictional demo case →</Link>
+      <Link href="/dashboard">Open the fictional demo workspace →</Link>
     </section>
   );
 }

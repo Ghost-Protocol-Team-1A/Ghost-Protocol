@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import styles from "./workstation.module.css";
 
 const NAV = [
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/cases/CASE-001/timeline", label: "Timeline" },
   { href: "/cases/CASE-001/conflicts", label: "Conflicts" },
   { href: "/cases/CASE-001/hypotheses", label: "Hypotheses" },
@@ -15,7 +16,7 @@ export default function WorkstationLayout({ children }: { children: React.ReactN
   return (
     <div className={styles.shell}>
       <header className={styles.topbar}>
-        <Logo href="/" />
+        <Logo href="/dashboard" />
         <span className={styles.demo}>SYNTHETIC DEMO DATA</span>
       </header>
       <aside className={styles.sidebar}>

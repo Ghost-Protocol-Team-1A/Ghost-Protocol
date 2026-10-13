@@ -21,7 +21,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               {item.label}
             </Link>
           ))}
-          <Link href="/cases/CASE-001/timeline" className={styles.cta}>
+          <Link href="/dashboard" className={styles.cta}>
             Open demo workspace
           </Link>
         </nav>
