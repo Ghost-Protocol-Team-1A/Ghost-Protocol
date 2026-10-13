@@ -10,9 +10,10 @@ whether the evidence **supports**, **contradicts**, merely **infers**, or **cann
 It does not decide who is responsible. It shows investigators what the evidence says and what
 it doesn't.
 
-> **Status: design and specification locked; application code in progress.**
-> This README describes the product we are building for the hackathon and marks what exists
-> today. Sections marked *planned* are not implemented yet.
+> **Status: engine and API skeleton running; screens in progress.**
+> CASE-001 loads, times are normalized, and the three rules detect C-01, C-02 and C-03 (23
+> backend tests). The timeline page renders live API data. Report export and evidence upload
+> are placeholders owned by teammates. Sections marked *planned* are not implemented yet.
 
 ---
 
@@ -135,7 +136,7 @@ Colors are always paired with the text label, never used alone.
 | Styling     | CSS variables from the Figma brand board | One token set for every screen |
 | Backend     | Python, FastAPI, Pydantic                | Typed contracts, automatic OpenAPI docs at `/docs` |
 | Domain      | Plain Python services, separate from HTTP routes | Rules and normalization are unit-testable |
-| Storage     | SQLite by default; PostgreSQL through `DATABASE_URL` | Zero-setup local demo; same code works on Postgres |
+| Storage     | In-memory store rebuilt from the seed (today); SQLite/PostgreSQL behind the same interface later | Deterministic, resettable demo |
 | Files       | Local content-addressed store (by SHA-256) | Original bytes preserved; no user input in paths |
 | Tests       | pytest, Vitest / Testing Library         | Known-answer tests against the seeded scenario |
 
@@ -145,24 +146,24 @@ adding anything the demo needs.
 
 ## API
 
-*Planned. The contract is agreed before parallel work starts. FastAPI serves the live schema at `/docs`.*
+All read endpoints below are live except the two marked *placeholder*. FastAPI serves the schema at `/docs`.
 
 | Method | Path                                   | Purpose |
 | ------ | -------------------------------------- | ------- |
 | GET    | `/health`                              | Liveness |
 | GET    | `/api/cases`                           | List cases |
-| POST   | `/api/cases`                           | Create a case |
+| POST   | `/api/cases`                           | Create a case *(planned)* |
 | GET    | `/api/cases/{case_id}`                 | Case overview and counts |
 | GET    | `/api/cases/{case_id}/evidence`        | Evidence inventory and processing status |
-| POST   | `/api/cases/{case_id}/evidence`        | Upload or add evidence (validated, hashed) |
+| POST   | `/api/cases/{case_id}/evidence`        | Upload evidence *(placeholder; @mallison031)* |
 | GET    | `/api/evidence/{evidence_id}`          | Evidence metadata and provenance |
 | GET    | `/api/cases/{case_id}/timeline`        | Events with source and normalized time |
 | GET    | `/api/cases/{case_id}/conflicts`       | Rule output with evidence links |
 | GET    | `/api/cases/{case_id}/claims`          | Claims with state and citations |
 | GET    | `/api/cases/{case_id}/hypotheses`      | Hypotheses with supporting and contradicting evidence |
-| POST   | `/api/reviews`                         | Record a reviewer decision (actor, reason, time) |
+| POST   | `/api/reviews`                         | Record a reviewer decision *(planned)* |
 | GET    | `/api/cases/{case_id}/audit`           | Audit trail |
-| GET    | `/api/cases/{case_id}/report?format=md\|json` | Report download |
+| GET    | `/api/cases/{case_id}/report?format=md\|json` | Report download *(placeholder; @Riel101)* |
 | POST   | `/api/demo/reset`                      | Restore CASE-001 to its seeded state |
 
 Errors share one shape: `{"error": {"code": "...", "message": "...", "details": {...}}}`.
@@ -208,8 +209,6 @@ All screens are designed in Figma and are the reference for the implementation:
 
 ## Repository layout
 
-*Planned; folders appear as each part lands.*
-
 ```
 backend/
   app/
@@ -234,14 +233,34 @@ docs/                    scenario, tasks, architecture, evaluation
 
 ## Running locally
 
-*The scaffold lands on Day 1, and this section will then list the exact commands.* Requirements:
+Requirements: Python 3.12+ and Node.js 22+.
 
-- Python 3.12+
-- Node.js 22+
-- Docker is optional; a `docker compose up` path will be added if it helps the team.
+**Backend** (http://localhost:8000, API docs at `/docs`):
 
-Configuration comes from environment variables. Copy `.env.example` to `.env`; never commit
-`.env`.
+```bash
+cd backend
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+.venv/bin/uvicorn app.main:app --reload --port 8000
+```
+
+**Frontend** (http://localhost:3000; open `/cases/CASE-001/timeline`):
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+**Checks** — run these before every pull request:
+
+```bash
+cd backend && .venv/bin/ruff check . && .venv/bin/pytest -q
+cd frontend && npm run lint && npm run typecheck && npm test && npm run build
+```
+
+Reset the demo at any time with `curl -X POST localhost:8000/api/demo/reset`. Configuration
+comes from environment variables; copy `.env.example` to `.env` and never commit `.env`.
 
 ---
 
