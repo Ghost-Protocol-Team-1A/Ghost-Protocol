@@ -46,7 +46,10 @@ def normalize(
     adjusted = parsed - timedelta(seconds=offset_seconds)
     if offset_seconds:
         direction = "fast" if offset_seconds > 0 else "slow"
-        rule = f"clock_offset:{-offset_seconds:+d}s (source clock {abs(offset_seconds)}s {direction})"
+        rule = (
+            f"clock_offset:{-offset_seconds:+d}s "
+            f"(source clock {abs(offset_seconds)}s {direction})"
+        )
     else:
         rule = "reference_clock"
     if approximate_seconds:
