@@ -1,0 +1,42 @@
+/* Shared workstation surfaces, matching the Figma panels (dark surface, 1px border). */
+
+.pageTitle {
+  font-size: var(--gp-text-xl);
+  font-weight: 400;
+  margin: 0;
+}
+
+.pageLead {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+  margin: var(--gp-space-1) 0 var(--gp-space-6);
+}
+
+.panel {
+  background: var(--gp-surface);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-radius);
+  padding: var(--gp-space-4);
+}
+
+.panelTitle {
+  font-size: var(--gp-text-sm);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.panelCaption {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-xs);
+  margin: var(--gp-space-1) 0 var(--gp-space-4);
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.error {
+  color: var(--gp-coral);
+}
