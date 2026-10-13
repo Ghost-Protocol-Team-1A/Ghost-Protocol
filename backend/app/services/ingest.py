@@ -103,6 +103,72 @@ def _csv_events(
     return events
 
 
+def metadata_event(case_id: str, item: EvidenceItem, raw: dict) -> Event:
+    """Build an event described in seed metadata (simulated extraction)."""
+    approx = raw.get("approximate_seconds", 0)
+    n = normalize(raw["source_time"], item.clock.offset_seconds, approx)
+    if approx:
+        state = ClaimState.UNRESOLVED
+    elif raw.get("interpretation"):
+        state = ClaimState.INFERRED
+    else:
+        state = ClaimState.SUPPORTED
+    return Event(
+        id=raw["id"],
+        case_id=case_id,
+        evidence_id=item.id,
+        locator=raw["locator"],
+        description=raw["description"],
+        source_time=raw["source_time"],
+        normalized_time=n.normalized_time,
+        offset_seconds=n.offset_seconds,
+        normalization_rule=n.rule,
+        approximate=bool(approx),
+        uncertainty_seconds=n.uncertainty_seconds,
+        state=state,
+    )
+
+
+@dataclass
+class StagedEvidence:
+    """Evidence held back from the seed so it can be added live during the demo."""
+
+    summary: str
+    evidence: EvidenceItem
+    events: list[Event]
+    claims: list[Claim]
+    hypothesis_notes: dict[str, str]
+
+
+def staged_ids(name: str = "case_001") -> list[str]:
+    folder = SEED_ROOT / name / "staged"
+    return sorted(p.stem for p in folder.glob("*.json")) if folder.is_dir() else []
+
+
+def load_staged(name: str, evidence_id: str, case_id: str, ingested_at: str) -> StagedEvidence:
+    raw = json.loads((SEED_ROOT / name / "staged" / f"{evidence_id}.json").read_text("utf-8"))
+    ev = raw["evidence"]
+    item = EvidenceItem(
+        id=ev["id"],
+        case_id=case_id,
+        type=EvidenceType(ev["type"]),
+        source_name=ev["source_name"],
+        original_filename=ev["original_filename"],
+        ingested_at=ingested_at,
+        processing_status=ProcessingStatus.EXTRACTED,
+        extraction_method=ExtractionMethod.SIMULATED,
+        clock=ClockAssumption(**ev["clock"]),
+        simulated=True,
+    )
+    return StagedEvidence(
+        summary=raw["summary"],
+        evidence=item,
+        events=[metadata_event(case_id, item, e) for e in raw["metadata_events"]],
+        claims=[Claim(case_id=case_id, **c) for c in raw["claims"]],
+        hypothesis_notes=raw.get("hypothesis_notes", {}),
+    )
+
+
 def load_seed(name: str = "case_001") -> SeedCase:
     root = SEED_ROOT / name
     data = json.loads((root / "case.json").read_text(encoding="utf-8"))
@@ -149,31 +215,7 @@ def load_seed(name: str = "case_001") -> SeedCase:
         )
 
     for raw in data["metadata_events"]:
-        item = by_id[raw["evidence_id"]]
-        approx = raw.get("approximate_seconds", 0)
-        n = normalize(raw["source_time"], item.clock.offset_seconds, approx)
-        if approx:
-            state = ClaimState.UNRESOLVED
-        elif raw.get("interpretation"):
-            state = ClaimState.INFERRED
-        else:
-            state = ClaimState.SUPPORTED
-        events.append(
-            Event(
-                id=raw["id"],
-                case_id=case.id,
-                evidence_id=item.id,
-                locator=raw["locator"],
-                description=raw["description"],
-                source_time=raw["source_time"],
-                normalized_time=n.normalized_time,
-                offset_seconds=n.offset_seconds,
-                normalization_rule=n.rule,
-                approximate=bool(approx),
-                uncertainty_seconds=n.uncertainty_seconds,
-                state=state,
-            )
-        )
+        events.append(metadata_event(case.id, by_id[raw["evidence_id"]], raw))
 
     claims = [Claim(case_id=case.id, **c) for c in data["claims"]]
     hypotheses = [Hypothesis(case_id=case.id, **h) for h in data["hypotheses"]]
