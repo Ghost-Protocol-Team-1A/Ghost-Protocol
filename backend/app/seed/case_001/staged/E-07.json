@@ -1,0 +1,34 @@
+{
+  "_notice": "FICTIONAL DEMO DATA. Held back from the initial seed and added live during the demo.",
+  "summary": "Gate camera export: no vehicle leaves between 21:10 and 21:30",
+  "evidence": {
+    "id": "E-07",
+    "type": "video",
+    "source_name": "Main gate CCTV",
+    "original_filename": "gate_cam_2110_2130.mp4",
+    "clock": {"offset_seconds": 0, "method": "reference_clock", "note": "NTP-synced recorder"}
+  },
+  "metadata_events": [
+    {
+      "id": "EV-022",
+      "evidence_id": "E-07",
+      "locator": "timecode 00:00-20:00",
+      "description": "Gate camera: no vehicle leaves between 21:10 and 21:30",
+      "source_time": "2026-10-10T21:10:00+01:00"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-07",
+      "statement": "No vehicle left through the main gate between 21:10 and 21:30",
+      "state": "supported",
+      "rationale": "Recorded directly on E-07 for the whole 20-minute window.",
+      "links": [{"evidence_id": "E-07", "locator": "timecode 00:00-20:00", "relationship": "supports"}]
+    }
+  ],
+  "hypothesis_notes": {
+    "H-01": "E-07 (gate camera) does not bear on this question.",
+    "H-02": "E-07 (gate camera) does not bear on this question.",
+    "H-03": "E-07 (gate camera) does not bear on this question."
+  }
+}
