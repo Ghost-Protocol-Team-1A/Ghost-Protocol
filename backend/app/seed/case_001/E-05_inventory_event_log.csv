@@ -1,0 +1,13 @@
+row,timestamp,asset_id,event_code,badge_id,door,note
+1,2026-10-10T18:30:00+01:00,EQ-3310,CHECKED_IN,,,daily count
+2,2026-10-10T19:45:00+01:00,EQ-2208,CHECKED_OUT,,,maintenance
+3,2026-10-10T21:00:00+01:00,EQ-4471,SECURED,,,end-of-shift check
+4,2026-10-10T21:01:30+01:00,EQ-3310,SECURED,,,end-of-shift check
+5,2026-10-10T21:02:10+01:00,EQ-2208,RETURNED,,,maintenance
+6,2026-10-10T21:04:00+01:00,EQ-1177,SECURED,,,end-of-shift check
+7,2026-10-10T21:09:00+01:00,,DOOR_OPEN,B-117,LOADING-BAY,imported from access system
+8,2026-10-10T21:25:00+01:00,EQ-1177,COUNTED,,,spot check
+9,2026-10-10T21:40:00+01:00,EQ-3310,COUNTED,,,spot check
+10,2026-10-10T21:48:00+01:00,EQ-2208,COUNTED,,,spot check
+11,2026-10-10T21:55:00+01:00,EQ-1177,COUNTED,,,spot check
+12,2026-10-10T22:00:00+01:00,EQ-4471,MISSING,,,discovered during spot check
