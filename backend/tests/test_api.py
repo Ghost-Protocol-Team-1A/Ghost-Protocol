@@ -44,3 +44,21 @@ def test_reset_restores_state_and_logs_it(client):
     audit = client.get("/api/cases/CASE-001/audit").json()
     assert audit[0]["action"] == "Demo reset"
     assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 6
+
+
+def test_original_log_rows_match_the_hash(client):
+    import hashlib
+
+    from app.services.ingest import SEED_ROOT
+
+    body = client.get("/api/cases/CASE-001/evidence/E-04/original").json()
+    assert body["columns"][:3] == ["row", "timestamp", "badge_id"]
+    assert body["rows"][17]["timestamp"] == "2026-10-10T21:12:00+01:00"
+    raw = (SEED_ROOT / "case_001" / body["filename"]).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == body["sha256"]
+
+
+def test_simulated_evidence_has_no_original(client):
+    res = client.get("/api/cases/CASE-001/evidence/E-02/original")
+    assert res.status_code == 404
+    assert res.json()["error"]["code"] == "original_not_available"
