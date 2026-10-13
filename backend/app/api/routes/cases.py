@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.errors import not_found
+from app.errors import ApiError, not_found
 from app.models.domain import (
     AuditEvent,
     CaseSummary,
@@ -9,6 +9,7 @@ from app.models.domain import (
     Event,
     EvidenceItem,
     Hypothesis,
+    OriginalRecord,
 )
 from app.services.store import CaseData, store
 
@@ -43,6 +44,25 @@ def read_evidence(evidence_id: str, case_id: str = "CASE-001") -> EvidenceItem:
         if item.id == evidence_id:
             return item
     raise not_found("evidence", evidence_id)
+
+
+@router.get("/cases/{case_id}/evidence/{evidence_id}/original", response_model=OriginalRecord)
+def read_original(case_id: str, evidence_id: str) -> OriginalRecord:
+    data = get_case(case_id)
+    item = next((e for e in data.evidence if e.id == evidence_id), None)
+    if item is None:
+        raise not_found("evidence", evidence_id)
+    original = data.original_rows(evidence_id)
+    if original is None:
+        raise ApiError(
+            404,
+            "original_not_available",
+            f"No original file is stored for {evidence_id}; its events come from seed metadata.",
+        )
+    filename, columns, rows = original
+    return OriginalRecord(
+        evidence_id=evidence_id, filename=filename, sha256=item.sha256, columns=columns, rows=rows
+    )
 
 
 @router.get("/cases/{case_id}/timeline", response_model=list[Event])
