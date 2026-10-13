@@ -1,3 +1,3 @@
-from app.api.routes import cases, demo, evidence_upload, report
+from app.api.routes import cases, demo, evidence_upload, live, report
 
-ROUTERS = [demo.router, cases.router, evidence_upload.router, report.router]
+ROUTERS = [demo.router, cases.router, live.router, evidence_upload.router, report.router]
