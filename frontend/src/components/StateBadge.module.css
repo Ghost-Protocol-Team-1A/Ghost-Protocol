@@ -1,0 +1,25 @@
+.badge {
+  display: inline-block;
+  font-size: var(--gp-text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px var(--gp-space-2);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+
+.supported {
+  color: var(--gp-state-supported);
+}
+
+.contradicted {
+  color: var(--gp-state-contradicted);
+}
+
+.inferred {
+  color: var(--gp-state-inferred);
+}
+
+.unresolved {
+  color: var(--gp-state-unresolved);
+}

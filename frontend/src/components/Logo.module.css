@@ -1,0 +1,9 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gp-space-3);
+  color: var(--gp-text);
+  text-decoration: none;
+  font-size: var(--gp-text-md);
+  letter-spacing: 0.02em;
+}
