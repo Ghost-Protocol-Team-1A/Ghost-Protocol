@@ -10,10 +10,11 @@ whether the evidence **supports**, **contradicts**, merely **infers**, or **cann
 It does not decide who is responsible. It shows investigators what the evidence says and what
 it doesn't.
 
-> **Status: engine and API skeleton running; screens in progress.**
-> CASE-001 loads, times are normalized, and the three rules detect C-01, C-02 and C-03 (23
-> backend tests). The timeline page renders live API data. Report export and evidence upload
-> are placeholders owned by teammates. Sections marked *planned* are not implemented yet.
+> **Status: engine and API running; screens in progress.**
+> CASE-001 loads, times are normalized, and the three rules detect C-01, C-02 and C-03 (73
+> backend tests). The timeline page renders live API data, report export serves a real
+> download, and evidence upload validates, hashes and stores files. Sections marked *planned*
+> are not implemented yet.
 
 ---
 
@@ -146,7 +147,7 @@ adding anything the demo needs.
 
 ## API
 
-All read endpoints below are live except the two marked *placeholder*. FastAPI serves the schema at `/docs`.
+All endpoints below are live except the two marked *planned*. FastAPI serves the schema at `/docs`.
 
 | Method | Path                                   | Purpose |
 | ------ | -------------------------------------- | ------- |
@@ -155,7 +156,7 @@ All read endpoints below are live except the two marked *placeholder*. FastAPI s
 | POST   | `/api/cases`                           | Create a case *(planned)* |
 | GET    | `/api/cases/{case_id}`                 | Case overview and counts |
 | GET    | `/api/cases/{case_id}/evidence`        | Evidence inventory and processing status |
-| POST   | `/api/cases/{case_id}/evidence`        | Upload evidence *(placeholder; @mallison031)* |
+| POST   | `/api/cases/{case_id}/evidence`        | Upload evidence (validated, hashed, stored) |
 | GET    | `/api/evidence/{evidence_id}`          | Evidence metadata and provenance |
 | GET    | `/api/cases/{case_id}/timeline`        | Events with source and normalized time |
 | GET    | `/api/cases/{case_id}/conflicts`       | Rule output with evidence links |
@@ -163,7 +164,7 @@ All read endpoints below are live except the two marked *placeholder*. FastAPI s
 | GET    | `/api/cases/{case_id}/hypotheses`      | Hypotheses with supporting and contradicting evidence |
 | POST   | `/api/reviews`                         | Record a reviewer decision *(planned)* |
 | GET    | `/api/cases/{case_id}/audit`           | Audit trail |
-| GET    | `/api/cases/{case_id}/report?format=md\|json` | Report download *(placeholder; @Riel101)* |
+| GET    | `/api/cases/{case_id}/report?format=md\|json` | Report download (Markdown or JSON) |
 | POST   | `/api/demo/reset`                      | Restore CASE-001 to its seeded state |
 
 Errors share one shape: `{"error": {"code": "...", "message": "...", "details": {...}}}`.
