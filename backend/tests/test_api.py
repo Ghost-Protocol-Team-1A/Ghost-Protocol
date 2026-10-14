@@ -1,14 +1,30 @@
+import hashlib
+import shutil
+import subprocess
+
 import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services.store import store
 
+CSV_BYTES = (
+    b"row,timestamp,badge_id,door,event_code\n"
+    b"1,2026-10-10T21:00:00+01:00,B-99,front,DOOR_OPEN\n"
+)
+
 
 @pytest.fixture()
-def client():
+def client(tmp_path, monkeypatch):
+    # Uploads are content-addressed on disk; point the store at a throwaway directory so a
+    # test never writes into the repository or sees bytes left behind by an earlier run.
+    monkeypatch.setenv("GP_STORAGE_DIR", str(tmp_path))
     store.reset()
     return TestClient(app)
+
+
+def upload(client, name, content):
+    return client.post("/api/cases/CASE-001/evidence", files={"file": (name, content)})
 
 
 def test_health(client):
@@ -47,8 +63,6 @@ def test_reset_restores_state_and_logs_it(client):
 
 
 def test_original_log_rows_match_the_hash(client):
-    import hashlib
-
     from app.services.ingest import SEED_ROOT
 
     body = client.get("/api/cases/CASE-001/evidence/E-04/original").json()
@@ -133,3 +147,100 @@ def test_reset_removes_created_cases(client):
     )
     client.post("/api/demo/reset")
     assert [c["case"]["id"] for c in client.get("/api/cases").json()] == ["CASE-001"]
+
+
+# --- evidence upload: the storage checks end to end through the API ---------------------------
+
+
+def test_a_valid_csv_upload_is_stored_provably(tmp_path, client):
+    res = upload(client, "shift-log.csv", CSV_BYTES)
+    assert res.status_code == 201
+    body = res.json()
+    assert body["duplicate"] is False
+    assert body["type"] == "csv"
+    assert body["original_filename"] == "shift-log.csv"
+    assert body["size_bytes"] == len(CSV_BYTES)
+    assert body["processing_status"] == "queued"
+
+    # The hash in the API response matches shasum -a 256 of the file (acceptance for issue #3).
+    assert body["sha256"] == hashlib.sha256(CSV_BYTES).hexdigest()
+    tool = shutil.which("shasum") or shutil.which("sha256sum")
+    if tool:
+        path = tmp_path / "upload-target"
+        path.write_bytes(CSV_BYTES)
+        argv = [tool, "-a", "256", str(path)] if "shasum" in tool else [tool, str(path)]
+        reported = subprocess.run(argv, capture_output=True, text=True, check=True).stdout
+        assert reported.split()[0] == body["sha256"]
+
+    # Stored under the digest alone, sharded, exactly as hashed.
+    digest = body["sha256"]
+    stored = tmp_path / digest[:2] / digest
+    assert stored.read_bytes() == CSV_BYTES
+
+    # Registered in the case: inventory, report input and audit trail all see it.
+    ids = [e["id"] for e in client.get("/api/cases/CASE-001/evidence").json()]
+    assert body["id"] in ids  # E-07 is staged, so the first upload is E-08
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 7
+    assert client.get("/api/cases/CASE-001/audit").json()[0]["action"] == "Evidence uploaded"
+
+    # Its original rows are readable in the evidence viewer, like a seeded CSV.
+    original = client.get(f"/api/cases/CASE-001/evidence/{body['id']}/original").json()
+    assert original["columns"] == ["row", "timestamp", "badge_id", "door", "event_code"]
+    assert original["rows"][0]["badge_id"] == "B-99"
+    assert original["sha256"] == body["sha256"]
+
+
+def test_a_traversal_filename_never_reaches_the_filesystem(tmp_path, client):
+    res = upload(client, "../../etc/evil-dir/passwd.csv", CSV_BYTES)
+    assert res.status_code == 201
+    body = res.json()
+    assert body["original_filename"] == "passwd.csv"
+
+    digest = body["sha256"]
+    path = tmp_path / digest[:2] / digest
+    assert path.is_relative_to(tmp_path)
+    assert path.name == digest
+    for fragment in ("evil", "passwd", "csv", "dir", ".."):
+        assert fragment not in str(path.relative_to(tmp_path))
+
+
+def test_an_executable_renamed_to_pdf_is_rejected(client):
+    res = upload(client, "audit.pdf", b"MZ\x90\x00\x03\x00\x00\x00")
+    assert res.status_code == 415
+    error = res.json()["error"]
+    assert error["code"] == "type_mismatch"
+    assert "windows executable" in error["details"]["detected"]
+
+
+def test_an_oversize_upload_is_refused(client, monkeypatch):
+    monkeypatch.setenv("MAX_UPLOAD_MB", "1")
+    res = upload(client, "huge.csv", b"a" * (1024 * 1024 + 1))
+    assert res.status_code == 413
+    assert res.json()["error"]["code"] == "file_too_large"
+
+
+def test_an_empty_upload_is_rejected(client):
+    res = upload(client, "empty.csv", b"")
+    assert res.status_code == 422
+    assert res.json()["error"]["code"] == "empty_file"
+
+
+def test_the_same_file_twice_returns_the_existing_item(client):
+    first = upload(client, "shift-log.csv", CSV_BYTES)
+    assert first.status_code == 201
+    assert first.json()["duplicate"] is False
+
+    second = upload(client, "renamed-copy.csv", CSV_BYTES)
+    assert second.status_code == 200  # no second item was created
+    assert second.json()["duplicate"] is True
+    assert second.json()["id"] == first.json()["id"]
+
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 7
+    audit = client.get("/api/cases/CASE-001/audit").json()
+    assert audit[0]["action"] == "Duplicate upload skipped"
+
+
+def test_unknown_case_cannot_receive_evidence(client):
+    res = client.post("/api/cases/CASE-999/evidence", files={"file": ("x.csv", CSV_BYTES)})
+    assert res.status_code == 404
+    assert res.json()["error"]["code"] == "case_not_found"
