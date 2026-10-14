@@ -63,7 +63,7 @@ export const api = {
     request<Conflict | Hypothesis>(`/api/cases/${id}/reviews`, "POST", body),
   createCase: (body: NewCase) => request<CaseSummary>("/api/cases", "POST", body),
   resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
-  /** Whether the report export endpoint is implemented (it returns 501 until it is). */
+  /** Whether the report export endpoint answers; false when the API is down or it 501s. */
   reportAvailable: async (id: string): Promise<boolean> => {
     try {
       const res = await fetch(`${BASE}/api/cases/${id}/report?format=json`, { cache: "no-store" });

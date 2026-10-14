@@ -205,8 +205,8 @@ export default async function ReportPage({ params }: { params: Promise<{ caseId:
                 Download JSON
               </button>
               <p className={styles.muted}>
-                Export is not available yet: the report endpoint is still being built (issue #2).
-                The preview shows exactly what it will contain.
+                The report endpoint did not answer, so export is unavailable right now. The
+                preview shows exactly what it would contain.
               </p>
             </div>
           )}
