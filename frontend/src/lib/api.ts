@@ -8,6 +8,7 @@ import type {
   EvidenceItem,
   Hypothesis,
   NewCase,
+  NewReview,
   OriginalRecord,
   StagedItem,
   TimelineEvent,
@@ -58,6 +59,8 @@ export const api = {
   changes: (id: string) => get<ChangeSummary[]>(`/api/cases/${id}/changes`),
   addStaged: (id: string, evidenceId: string) =>
     request<ChangeSummary>(`/api/cases/${id}/staged/${evidenceId}`, "POST"),
+  createReview: (id: string, body: NewReview) =>
+    request<Conflict | Hypothesis>(`/api/cases/${id}/reviews`, "POST", body),
   createCase: (body: NewCase) => request<CaseSummary>("/api/cases", "POST", body),
   resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
   /** Whether the report export endpoint is implemented (it returns 501 until it is). */

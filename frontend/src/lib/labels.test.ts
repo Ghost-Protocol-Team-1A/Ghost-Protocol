@@ -15,6 +15,7 @@ const base: Conflict = {
   uncertain: "",
   status: "open",
   requires_human_review: true,
+  reviews: [],
 };
 const offset: Conflict = { ...base, id: "C-02", type: "clock_offset", evidence_ids: ["E-02"] };
 
