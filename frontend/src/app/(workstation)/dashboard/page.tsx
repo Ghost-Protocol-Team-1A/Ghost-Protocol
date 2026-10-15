@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import panel from "@/components/panel.module.css";
 import { api, ApiError } from "@/lib/api";
 import { metrics, offsetEvents, pad } from "@/lib/dashboard";
-import { conflictTitle } from "@/lib/labels";
+import { conflictTitle, SEVERITY_LABELS } from "@/lib/labels";
 import { addStagedEvidence, resetDemo } from "../actions";
 import styles from "./dashboard.module.css";
 
@@ -25,6 +26,7 @@ export default async function DashboardPage({
       api.audit(CASE_ID),
       api.staged(CASE_ID),
       api.changes(CASE_ID),
+      api.evidence(CASE_ID),
     ]);
   } catch (err) {
     const message = err instanceof ApiError ? err.message : "The API is not reachable.";
@@ -34,196 +36,191 @@ export default async function DashboardPage({
       </p>
     );
   }
-  const [cases, claims, conflicts, events, audit, staged, changes] = data;
+  const [cases, claims, conflicts, events, audit, staged, changes, evidence] = data;
   const m = metrics(cases, claims);
   const latestChange = changes.at(-1);
-
-  const cards = [
-    { label: "Active cases", value: m.cases, tone: styles.cyan },
-    { label: "Evidence items", value: m.evidence, tone: styles.lime },
-    { label: "Open conflicts", value: m.openConflicts, tone: styles.coral },
-    { label: "Unresolved claims", value: m.unresolvedClaims, tone: styles.gold },
-  ];
+  const hashed = evidence.filter((e) => e.sha256).length;
+  const open = conflicts.filter((c) => c.status === "open" || c.status === "under_review");
+  const reviewed = conflicts.length - open.length;
 
   return (
-    <section>
-      <h1 className={panel.pageTitle}>Case dashboard</h1>
-      <p className={`${panel.pageLead} ${styles.cyanText}`}>
-        A clear overview of cases, evidence processing, and decisions awaiting review.
-      </p>
+    <section className={styles.page}>
+      <div className={styles.head}>
+        <div>
+          <p className="gp-eyebrow">{CASE_ID} · fictional</p>
+          <h1 className={panel.pageTitle}>Case dashboard</h1>
+          <p className={styles.lead}>
+            {open.length === 0
+              ? "Every conflict has a decision."
+              : `${open.length} conflict${open.length === 1 ? "" : "s"} need${open.length === 1 ? "s" : ""} a decision.`}{" "}
+            {staged.length > 0 && "One piece of evidence is waiting to be added live."}
+          </p>
+        </div>
+      </div>
 
       {reset && (
         <p role="status" className={styles.notice}>
-          Demo reset: CASE-001 is back to its seeded state.
+          Demo reset: {CASE_ID} is back to its seeded state.
         </p>
       )}
 
       <ul className={styles.metrics}>
-        {cards.map((c) => (
-          <li key={c.label} className={`${styles.metric} ${c.tone}`}>
-            <span className={styles.metricLabel}>{c.label}</span>
-            <span className={styles.metricValue}>{pad(c.value)}</span>
-          </li>
-        ))}
+        <li className={styles.metric}>
+          <span className={styles.metricLabel}>Evidence</span>
+          <span className={styles.metricValue}>{pad(m.evidence)}</span>
+          <span className={styles.metricNote}>
+            {hashed} hashed · {m.evidence - hashed} simulated
+          </span>
+        </li>
+        <li className={styles.metric}>
+          <span className={styles.metricLabel}>Events</span>
+          <span className={styles.metricValue}>{pad(events.length)}</span>
+          <span className={styles.metricNote}>{offsetEvents(events)} time-corrected</span>
+        </li>
+        <li className={`${styles.metric} ${styles.metricHot}`}>
+          <span className={styles.metricLabel}>Open conflicts</span>
+          <span className={styles.metricValue}>{pad(open.length)}</span>
+          <span className={styles.metricNote}>
+            {reviewed} of {conflicts.length} decided
+          </span>
+        </li>
+        <li className={styles.metric}>
+          <span className={styles.metricLabel}>Unresolved</span>
+          <span className={styles.metricValue}>{pad(m.unresolvedClaims)}</span>
+          <span className={styles.metricNote}>claims the evidence can’t settle</span>
+        </li>
       </ul>
 
       <div className={styles.grid}>
-        <section className={`${panel.panel} ${styles.cyanBorder}`} aria-labelledby="cases-heading">
-          <h2 id="cases-heading" className={panel.panelTitle}>
-            Recent cases
-          </h2>
-          <p className={`${panel.panelCaption} ${styles.cyanText}`}>
-            Open a case to inspect evidence and event relationships.
-          </p>
-          <ul className={styles.rows}>
-            {cases.map((c) => (
-              <li key={c.case.id}>
-                <Link href={`/cases/${c.case.id}/timeline`} className={styles.caseRow}>
-                  <span className={styles.caseId}>{c.case.id}</span>
-                  <span>
-                    {c.case.title}
-                    <span className={styles.status}>
-                      {c.case.status}
-                      {c.case.fictional && " · fictional"}
-                    </span>
-                  </span>
-                  <span className={styles.count}>{pad(c.evidence_count)} items</span>
+        <section className={panel.panel} aria-labelledby="decide-heading">
+          <div className={styles.rowHead}>
+            <h2 id="decide-heading" className={panel.panelTitle}>
+              Needs a decision
+            </h2>
+            <Link href={`/cases/${CASE_ID}/conflicts`} className={styles.more}>
+              Open inspector <Icon name="arrow" size={14} />
+            </Link>
+          </div>
+          <ul className={styles.decisions}>
+            {conflicts.map((c) => (
+              <li key={c.id} className={styles.decision}>
+                <div>
+                  <p className={`gp-mono ${styles.ruleLine} ${styles[`sev_${c.severity}`]}`}>
+                    {c.id} · {c.rule_id} · {SEVERITY_LABELS[c.severity]}
+                  </p>
+                  <p className={styles.decisionTitle}>{conflictTitle(c)}</p>
+                </div>
+                <Link href={`/cases/${CASE_ID}/conflicts?c=${c.id}`} className="gp-btn gp-btn-ghost">
+                  {c.status === "open" ? "Review" : c.status.replace("_", " ")}
                 </Link>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className={`${panel.panel} ${styles.coralBorder}`} aria-labelledby="attention-heading">
-          <h2 id="attention-heading" className={panel.panelTitle}>
-            Needs attention
+        <section className={panel.panel} aria-labelledby="live-heading">
+          <h2 id="live-heading" className={panel.panelTitle}>
+            Live evidence
           </h2>
-          <p className={panel.panelCaption}>Items requiring investigator review.</p>
-          <ul className={styles.attention}>
-            {conflicts.map((c) => (
-              <li key={c.id} className={styles[c.severity]}>
-                <Link href={`/cases/${CASE_ID}/conflicts?c=${c.id}`}>{conflictTitle(c)}</Link>
-                <span className={styles.meta}>
-                  {c.id} · {c.rule_id}
-                  {c.evidence_ids.length > 0 && ` · ${c.evidence_ids.join(", ")}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <section className={`${panel.panel} ${styles.wide}`} aria-labelledby="pipeline-heading">
-        <div>
-          <h2 id="activity-heading" className={`${panel.panelTitle} ${styles.cyanText}`}>
-            Recent activity
-          </h2>
-          <ul className={styles.activity} aria-labelledby="activity-heading">
-            {audit.slice(0, 3).map((a) => (
-              <li key={a.id}>
-                <span className={panel.mono}>{a.at.slice(11, 16)} UTC</span> · {a.entity_ref}{" "}
-                {a.action.toLowerCase()}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <h2 id="pipeline-heading" className={`${panel.panelTitle} ${styles.cyanText}`}>
-            Evidence pipeline
-          </h2>
-          <ol className={styles.pipeline}>
-            <li className={styles.cyan}>
-              Ingest <span>{m.evidence} sources</span>
-            </li>
-            <li className={styles.lime}>
-              Normalize <span>{offsetEvents(events)} offset applied</span>
-            </li>
-            <li className={styles.coral}>
-              Compare <span>{m.openConflicts} conflicts</span>
-            </li>
-            <li className={styles.gold}>
-              Review <span>{m.unresolvedClaims} unresolved</span>
-            </li>
-          </ol>
-          <p className={styles.provenance}>Provenance preserved at every step.</p>
-        </div>
-      </section>
-
-      <section className={`${panel.panel} ${styles.live}`} aria-labelledby="live-heading">
-        <h2 id="live-heading" className={panel.panelTitle}>
-          Live demo
-        </h2>
-        <p className={panel.panelCaption}>
-          Add held-back evidence and see what the analysis changes, and what it does not.
-        </p>
-
-        {staged.length > 0 ? (
-          <ul className={styles.staged}>
-            {staged.map((s) => (
-              <li key={s.evidence_id}>
-                <span>
-                  <strong>{s.evidence_id}</strong> {s.source_name}
-                  <span className={styles.meta}>{s.summary}</span>
-                </span>
+          <p className={panel.panelCaption}>
+            Add held-back evidence and see what the analysis changes, and what it does not.
+          </p>
+          {staged.length > 0 ? (
+            staged.map((s) => (
+              <div key={s.evidence_id} className={styles.staged}>
+                <p className={`gp-mono ${styles.stagedId}`}>
+                  {s.evidence_id} · {s.source_name}
+                </p>
+                <p className={styles.stagedText}>{s.summary}</p>
                 <form action={addStagedEvidence}>
                   <input type="hidden" name="caseId" value={CASE_ID} />
                   <input type="hidden" name="evidenceId" value={s.evidence_id} />
-                  <button type="submit" className={styles.primary}>
+                  <button type="submit" className={`gp-btn gp-btn-lime ${styles.full}`}>
                     Add {s.evidence_id} to {CASE_ID}
                   </button>
                 </form>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={styles.meta}>All held-back evidence has been added.</p>
-        )}
+              </div>
+            ))
+          ) : (
+            <p className={styles.muted}>All held-back evidence has been added.</p>
+          )}
 
-        {latestChange && (
-          <div
-            className={styles.change}
-            role={added ? "status" : undefined}
-            aria-labelledby="change-heading"
-          >
-            <h3 id="change-heading" className={styles.changeTitle}>
-              {latestChange.id} · {latestChange.trigger}
-            </h3>
-            <dl className={styles.changeList}>
-              <dt>Added</dt>
-              <dd>
-                {[...latestChange.added_evidence, ...latestChange.added_events, ...latestChange.added_claims].join(
-                  ", ",
-                )}
-              </dd>
-              <dt>Conflicts</dt>
-              <dd>
-                {latestChange.conflicts_added.length || latestChange.conflicts_removed.length
-                  ? [
-                      ...latestChange.conflicts_added.map((c) => `+${c}`),
-                      ...latestChange.conflicts_removed.map((c) => `−${c}`),
-                    ].join(", ")
-                  : "None added or removed"}
-              </dd>
-              <dt>State changes</dt>
-              <dd>{latestChange.state_changes.join("; ") || "None"}</dd>
-              <dt>Did not change</dt>
-              <dd>
-                <ul className={styles.unchanged}>
-                  {latestChange.unchanged.map((u) => (
-                    <li key={u}>{u}</li>
-                  ))}
-                </ul>
-              </dd>
-            </dl>
-          </div>
-        )}
+          {latestChange && (
+            <div className={styles.change} role={added ? "status" : undefined} aria-labelledby="change-heading">
+              <h3 id="change-heading" className={styles.changeTitle}>
+                {latestChange.id} · {latestChange.trigger}
+              </h3>
+              <dl className={styles.changeList}>
+                <dt>Added</dt>
+                <dd>
+                  {[
+                    ...latestChange.added_evidence,
+                    ...latestChange.added_events,
+                    ...latestChange.added_claims,
+                  ].join(", ")}
+                </dd>
+                <dt>Conflicts</dt>
+                <dd>
+                  {latestChange.conflicts_added.length || latestChange.conflicts_removed.length
+                    ? [
+                        ...latestChange.conflicts_added.map((c) => `+${c}`),
+                        ...latestChange.conflicts_removed.map((c) => `−${c}`),
+                      ].join(", ")
+                    : "None added or removed"}
+                </dd>
+                <dt>State changes</dt>
+                <dd>{latestChange.state_changes.join("; ") || "None"}</dd>
+                <dt>Did not change</dt>
+                <dd>
+                  <ul className={styles.unchanged}>
+                    {latestChange.unchanged.map((u) => (
+                      <li key={u}>{u}</li>
+                    ))}
+                  </ul>
+                </dd>
+              </dl>
+            </div>
+          )}
 
-        <form action={resetDemo} className={styles.resetForm}>
-          <button type="submit" className={styles.secondary}>
-            Reset demo
-          </button>
-          <span className={styles.meta}>Restores CASE-001 to its seeded, fictional state.</span>
-        </form>
+          <form action={resetDemo}>
+            <button type="submit" className={`gp-btn gp-btn-quiet ${styles.full}`}>
+              <Icon name="reset" size={16} /> Reset demo
+            </button>
+          </form>
+        </section>
+      </div>
+
+      <section className={`${panel.panel} ${styles.pipeline}`} aria-label="Evidence pipeline">
+        <span className={`gp-mono ${styles.pipeLabel}`}>Pipeline</span>
+        <span className="gp-chip gp-chip-lime">Ingest {m.evidence}</span>
+        <span className={styles.dash} aria-hidden="true" />
+        <span className="gp-chip gp-chip-lime">Normalize {offsetEvents(events)} offset</span>
+        <span className={styles.dash} aria-hidden="true" />
+        <span className="gp-chip gp-chip-lime">Compare {conflicts.length} rules hit</span>
+        <span className={styles.dash} aria-hidden="true" />
+        <span className={reviewed === conflicts.length ? "gp-chip gp-chip-lime" : "gp-chip"}>
+          Review {reviewed}/{conflicts.length}
+        </span>
+        <span className={styles.dash} aria-hidden="true" />
+        <Link href={`/cases/${CASE_ID}/report`} className="gp-chip">
+          Report
+        </Link>
+      </section>
+
+      <section className={panel.panel} aria-labelledby="activity-heading">
+        <h2 id="activity-heading" className={panel.panelTitle}>
+          Recent activity
+        </h2>
+        <ul className={styles.activity}>
+          {audit.slice(0, 4).map((a) => (
+            <li key={a.id}>
+              <span className="gp-mono">{a.at.slice(11, 16)} UTC</span>
+              <span className={styles.actor}>{a.actor}</span>
+              <span>{a.action}</span>
+              <span className="gp-mono">{a.entity_ref}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </section>
   );
