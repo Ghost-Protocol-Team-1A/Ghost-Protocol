@@ -25,14 +25,15 @@ export function conflictsFor(event: TimelineEvent, conflicts: Conflict[]): Confl
 /** Build a timeline URL that keeps the current filters and changes one value. */
 export function timelineHref(
   caseId: string,
-  current: TimelineFilters & { ev?: string },
-  change: Partial<TimelineFilters & { ev?: string }>,
+  current: TimelineFilters & { ev?: string; span?: string },
+  change: Partial<TimelineFilters & { ev?: string; span?: string }>,
 ): string {
   const next = { ...current, ...change };
   const params = new URLSearchParams();
   if (next.source) params.set("source", next.source);
   if (next.state) params.set("state", next.state);
   if (next.ev) params.set("ev", next.ev);
+  if (next.span) params.set("span", next.span);
   const qs = params.toString();
   return `/cases/${caseId}/timeline${qs ? `?${qs}` : ""}`;
 }

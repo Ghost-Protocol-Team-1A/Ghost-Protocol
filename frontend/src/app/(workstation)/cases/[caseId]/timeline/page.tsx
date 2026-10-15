@@ -3,6 +3,8 @@ import { StateBadge } from "@/components/StateBadge";
 import panel from "@/components/panel.module.css";
 import { api, ApiError, localTime } from "@/lib/api";
 import { conflictTitle } from "@/lib/labels";
+import { Lanes } from "@/features/timeline/Lanes";
+import { buildLanes, busiestWindow, fullWindow, ticks } from "@/lib/lanes";
 import { CLAIM_STATES, conflictsFor, filterEvents, timelineHref } from "@/lib/timeline";
 import styles from "./timeline.module.css";
 
@@ -23,7 +25,7 @@ export default async function TimelinePage({
   searchParams,
 }: {
   params: Promise<{ caseId: string }>;
-  searchParams: Promise<{ source?: string; state?: string; ev?: string }>;
+  searchParams: Promise<{ source?: string; state?: string; ev?: string; span?: string }>;
 }) {
   const { caseId } = await params;
   const query = await searchParams;
@@ -41,7 +43,11 @@ export default async function TimelinePage({
   }
   const [allEvents, evidence, conflicts] = data;
   const events = filterEvents(allEvents, query);
-  const active = { source: query.source, state: query.state };
+  const active = { source: query.source, state: query.state, span: query.span };
+  const whole = query.span === "all";
+  const range = whole ? fullWindow(events) : busiestWindow(events, 12);
+  const lanes = range ? buildLanes(events, evidence, range.start, range.end) : [];
+  const shown = lanes.reduce((n, l) => n + l.marks.length, 0);
   const selected = allEvents.find((e) => e.id === query.ev) ?? events[0];
   const selectedConflicts = selected ? conflictsFor(selected, conflicts) : [];
   const sourceName = new Map(evidence.map((e) => [e.id, e.source_name]));
@@ -86,6 +92,34 @@ export default async function TimelinePage({
           </Link>
         )}
       </form>
+
+      {range && lanes.length > 0 && (
+        <section className={`${panel.panel} ${styles.lanes}`} aria-labelledby="lanes-heading">
+          <div className={styles.lanesHead}>
+            <div>
+              <h2 id="lanes-heading" className={panel.panelTitle}>
+                Source lanes
+              </h2>
+              <p className={panel.panelCaption}>
+                One lane per source at normalized time. A dashed ring marks where a source’s own clock
+                put the event. {whole ? "Whole window" : "Busiest 12 minutes"}: {shown} of {events.length}{" "}
+                events.
+              </p>
+            </div>
+            <Link
+              href={timelineHref(caseId, active, { span: whole ? undefined : "all" })}
+              className="gp-btn gp-btn-ghost"
+            >
+              {whole ? "Busiest 12 minutes" : "Whole window"}
+            </Link>
+          </div>
+          <Lanes
+            lanes={lanes}
+            ticks={ticks(range, 5).map((t) => localTime(t).slice(0, 5))}
+            hrefFor={(ev) => timelineHref(caseId, active, { ev })}
+          />
+        </section>
+      )}
 
       <div className={styles.layout}>
         <section className={panel.panel} aria-labelledby="timeline-heading">
