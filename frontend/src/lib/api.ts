@@ -90,6 +90,12 @@ export const api = {
   /** Raw report response from the API, for the download route to pass through. */
   reportFile: (id: string, format: "md" | "json") =>
     fetch(`${BASE}/api/cases/${id}/report?format=${format}`, { cache: "no-store" }),
+  /** Original bytes of an evidence item, passing a Range header through for media seeking. */
+  evidenceFile: (id: string, evidenceId: string, range: string | null) =>
+    fetch(`${BASE}/api/cases/${id}/evidence/${evidenceId}/file`, {
+      cache: "no-store",
+      headers: range ? { range } : undefined,
+    }),
   /** API liveness, for the website health check. */
   health: async (): Promise<boolean> => {
     try {

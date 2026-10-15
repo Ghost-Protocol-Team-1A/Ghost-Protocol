@@ -28,6 +28,13 @@ export function clockLabel(clock: EvidenceItem["clock"]): string {
   return `Runs ${Math.abs(s)} s ${direction} · ${how}`;
 }
 
+/** How an item's events were (or were not) produced. */
+export function extractionLabel(item: Pick<EvidenceItem, "processing_status" | "simulated" | "type">): string {
+  if (item.processing_status === "queued") return "Not run yet · stored and hashed on upload";
+  if (item.simulated) return "Simulated from seed metadata";
+  return item.type === "csv" ? "Deterministic CSV parser" : "Deterministic parser";
+}
+
 export function formatBytes(n: number | null): string {
   if (n === null) return "—";
   return n < 1024 ? `${n} B` : `${(n / 1024).toFixed(1)} KB`;
