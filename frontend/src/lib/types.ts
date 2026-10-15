@@ -2,6 +2,8 @@
 
 export type ClaimState = "supported" | "contradicted" | "inferred" | "unresolved";
 
+export type DataClassification = "synthetic" | "internal" | "confidential";
+
 export interface Case {
   id: string;
   title: string;
@@ -10,11 +12,15 @@ export interface Case {
   incident_end: string;
   status: string;
   fictional: boolean;
+  scope: string;
+  classification: DataClassification;
 }
 
 export interface NewCase {
   title: string;
   description: string;
+  scope: string;
+  classification: DataClassification;
   incident_start: string;
   incident_end: string;
 }
