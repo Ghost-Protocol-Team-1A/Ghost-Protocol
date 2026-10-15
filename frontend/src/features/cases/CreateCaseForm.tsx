@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createCase, type CreateCaseState } from "@/app/(workstation)/cases/actions";
-import { UTC_OFFSETS } from "@/lib/cases";
+import { CLASSIFICATIONS, UTC_OFFSETS } from "@/lib/cases";
 import styles from "./CreateCaseForm.module.css";
 
 const initial: CreateCaseState = { errors: {} };
@@ -56,6 +56,37 @@ export function CreateCaseForm() {
           aria-describedby={describedBy("description")}
         />
         <FieldError id="case-description-error" message={err.description} />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="case-scope">Scope (optional)</label>
+        <textarea
+          id="case-scope"
+          name="scope"
+          defaultValue={v.scope}
+          maxLength={500}
+          rows={2}
+          placeholder="What this case tries to establish, and what it does not"
+          aria-describedby={describedBy("scope")}
+        />
+        <FieldError id="case-scope-error" message={err.scope} />
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="case-classification">Data classification</label>
+        <select
+          id="case-classification"
+          name="classification"
+          defaultValue={v.classification ?? "synthetic"}
+          aria-describedby={describedBy("classification")}
+        >
+          {CLASSIFICATIONS.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+        <FieldError id="case-classification-error" message={err.classification} />
       </div>
 
       <fieldset className={styles.window}>

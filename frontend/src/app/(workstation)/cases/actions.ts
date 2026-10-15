@@ -15,6 +15,8 @@ export async function createCase(_prev: CreateCaseState, formData: FormData): Pr
   const fields = {
     title: String(formData.get("title") ?? ""),
     description: String(formData.get("description") ?? ""),
+    scope: String(formData.get("scope") ?? ""),
+    classification: String(formData.get("classification") ?? ""),
     start: String(formData.get("start") ?? ""),
     end: String(formData.get("end") ?? ""),
     offset: String(formData.get("offset") ?? ""),
