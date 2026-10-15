@@ -1,39 +1,42 @@
-/* Shared workstation surfaces, matching the Figma panels (dark surface, 1px border). */
+/* Shared workstation surfaces (Figma: v2 · APP frames — ink canvas, raised cards, hairlines). */
 
 .pageTitle {
   font-size: var(--gp-text-xl);
-  font-weight: 400;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   margin: 0;
 }
 
 .pageLead {
   color: var(--gp-text-muted);
-  font-size: var(--gp-text-sm);
-  margin: var(--gp-space-1) 0 var(--gp-space-6);
+  font-size: var(--gp-text-md);
+  margin: var(--gp-space-2) 0 var(--gp-space-8);
+  max-width: 70ch;
 }
 
 .panel {
   background: var(--gp-surface);
   border: 1px solid var(--gp-border);
-  border-radius: var(--gp-radius);
-  padding: var(--gp-space-4);
+  border-radius: var(--gp-radius-lg);
+  padding: var(--gp-space-6);
 }
 
 .panelTitle {
-  font-size: var(--gp-text-sm);
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: var(--gp-text-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
 .panelCaption {
   color: var(--gp-text-muted);
-  font-size: var(--gp-text-xs);
+  font-size: var(--gp-text-sm);
   margin: var(--gp-space-1) 0 var(--gp-space-4);
 }
 
 .mono {
+  font-family: var(--gp-mono);
   font-variant-numeric: tabular-nums;
 }
 
