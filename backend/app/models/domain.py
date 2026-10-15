@@ -113,6 +113,15 @@ class Event(BaseModel):
     record: dict[str, str] = Field(default_factory=dict, description="Parsed fields for log rows")
 
 
+class ReviewNote(BaseModel):
+    """A human decision or note. Never edited after it is recorded."""
+
+    actor: str
+    at: str
+    note: str
+    status: ReviewStatus | None = None
+
+
 class Conflict(BaseModel):
     id: str
     case_id: str
@@ -126,6 +135,7 @@ class Conflict(BaseModel):
     uncertain: str = Field(description="What the rule cannot tell us")
     status: ReviewStatus = ReviewStatus.OPEN
     requires_human_review: bool = True
+    reviews: list[ReviewNote] = Field(default_factory=list)
 
 
 class EvidenceLink(BaseModel):
@@ -154,6 +164,7 @@ class Hypothesis(BaseModel):
     state: ClaimState
     notes: str
     links: list[EvidenceLink] = Field(default_factory=list)
+    reviews: list[ReviewNote] = Field(default_factory=list)
 
 
 class AuditEvent(BaseModel):
@@ -189,6 +200,15 @@ class CaseCreate(BaseModel):
         if self.incident_end <= self.incident_start:
             raise ValueError("incident_end must be after incident_start")
         return self
+
+
+class ReviewCreate(BaseModel):
+    """A reviewer decision on a conflict (with optional status) or a note on a hypothesis."""
+
+    target_id: str = Field(pattern=r"^(C|H)-\d{2}$")
+    note: str = Field(min_length=5, max_length=500)
+    status: ReviewStatus | None = None
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
 
 
 class StagedItem(BaseModel):
