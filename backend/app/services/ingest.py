@@ -27,6 +27,7 @@ from app.models.domain import (
     ProcessingStatus,
 )
 from app.services.normalize import normalize
+from app.services.offsets import INFER_METHOD, INFERRED_METHOD, describe, infer_offset
 
 SEED_ROOT = Path(__file__).resolve().parent.parent / "seed"
 
@@ -129,6 +130,37 @@ def metadata_event(case_id: str, item: EvidenceItem, raw: dict) -> Event:
     )
 
 
+def apply_inferred_offset(
+    item: EvidenceItem, events: list[Event], evidence: list[EvidenceItem]
+) -> None:
+    """Infer the item's clock offset from its anchors and re-normalize its events.
+
+    With no usable anchor the clock stays unknown at offset 0, and the note says so.
+    """
+    estimate = infer_offset(item, item.clock.anchors, events, evidence)
+    if estimate is None:
+        item.clock = item.clock.model_copy(
+            update={"note": "No usable anchor; offset could not be inferred."}
+        )
+        return
+    item.clock = item.clock.model_copy(
+        update={
+            "offset_seconds": estimate.offset_seconds,
+            "method": INFERRED_METHOD,
+            "note": describe(estimate),
+            "spread_seconds": estimate.spread_seconds,
+        }
+    )
+    for e in events:
+        if e.evidence_id != item.id:
+            continue
+        n = normalize(e.source_time, estimate.offset_seconds, e.uncertainty_seconds)
+        e.normalized_time = n.normalized_time
+        e.offset_seconds = n.offset_seconds
+        e.normalization_rule = f"{n.rule}; inferred from anchors"
+        e.uncertainty_seconds = max(e.uncertainty_seconds, estimate.spread_seconds // 2)
+
+
 @dataclass
 class StagedEvidence:
     """Evidence held back from the seed so it can be added live during the demo."""
@@ -216,6 +248,10 @@ def load_seed(name: str = "case_001") -> SeedCase:
 
     for raw in data["metadata_events"]:
         events.append(metadata_event(case.id, by_id[raw["evidence_id"]], raw))
+
+    for item in evidence:
+        if item.clock.method == INFER_METHOD:
+            apply_inferred_offset(item, events, evidence)
 
     claims = [Claim(case_id=case.id, **c) for c in data["claims"]]
     hypotheses = [Hypothesis(case_id=case.id, **h) for h in data["hypotheses"]]
