@@ -18,8 +18,8 @@ Legend: ✅ matches · ◐ built, with listed gaps · ✗ not built
 | Hypothesis comparison `48:795` | ✅ | Matches, including reviewer notes. A hypothesis's state comes from the evidence, so reviewers add notes rather than overriding it. The conflict inspector records decisions (open, under review, resolved, dismissed) with a required reason. |
 | Evidence viewer `48:334` | ✅ | Updated in Figma to the canonical E-02. Built shows original CSV rows for logs, which Figma's video preview does not. |
 | Report builder `48:413` | ◐ | Built matches the seven sections and status panel. Figma says export stays disabled until review passes; built allows export at any time and the report states human approval is pending. Figma's "18 / 18 sources linked" is sample data (built: 8 / 8 events linked). |
-| Cases `48:638` | ◐ | Built with live data. Figma's status filter tabs (All, Active, Needs review…) and owner column are not built. CASE-002–005 in Figma are sample rows. |
-| Create case `48:937` | ◐ | Built: title, description, incident window, UTC offset, validation. Figma's scope, data classification and per-source time assumptions are not built. |
+| Cases `48:638` | ✅ | Built with live data, filter tabs (All, Active, Open, With open conflicts) and a data-classification column; Figma updated to the same tabs. The owner column is not built (no accounts in the demo). |
+| Create case `48:937` | ◐ | Built: title, description, scope, data classification, incident window and a required UTC offset (Figma updated to say so). Per-source time assumptions are not built; clock offsets are set per evidence item. |
 | Audit trail `48:1056` | ✗ | Issue #5, @Blessed-Femi. Sidebar link currently 404s. |
 | Evidence intake `48:163` | ✗ | Upload API is in PR #19 (pending). Upload screen is a lead task after it merges. |
 | Extraction review `48:711` | ✗ | Out of MVP scope (extraction for media is simulated). |
