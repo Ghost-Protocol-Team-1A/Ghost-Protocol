@@ -1,4 +1,4 @@
-from app.api.routes import cases, demo, evidence_upload, live, report, reviews
+from app.api.routes import cases, demo, evidence_upload, live, report, reviews, workbench
 
 ROUTERS = [
     demo.router,
@@ -7,4 +7,5 @@ ROUTERS = [
     reviews.router,
     evidence_upload.router,
     report.router,
+    workbench.router,
 ]
