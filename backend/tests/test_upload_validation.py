@@ -16,6 +16,7 @@ from app.errors import ApiError
 from app.models.domain import EvidenceType
 from app.storage.hashing import CHUNK_SIZE, sha256_stream, storage_dir, stored_path
 from app.storage.validation import (
+    ALLOWED_EXTENSIONS,
     DEFAULT_MAX_UPLOAD_MB,
     MAX_FILENAME_LENGTH,
     UNNAMED,
@@ -39,6 +40,31 @@ VALID_UPLOADS = {
     "txt": (b"Interview note: the badge reader was slow.\n", EvidenceType.TEXT),
     "png": (b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR", EvidenceType.IMAGE),
     "jpg": (b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01", EvidenceType.IMAGE),
+    # Phone and messaging formats.
+    "m4a": (b"\x00\x00\x00\x1cftypM4A \x00\x00\x00\x00", EvidenceType.AUDIO),
+    "aac": (b"\xff\xf1\x50\x80\x02\x1f\xfc", EvidenceType.AUDIO),
+    "ogg": (b"OggS\x00\x02\x00\x00\x00\x00", EvidenceType.AUDIO),
+    "oga": (b"OggS\x00\x02\x00\x00\x00\x00", EvidenceType.AUDIO),
+    "opus": (b"OggS\x00\x02\x00\x00\x00\x00", EvidenceType.AUDIO),
+    "flac": (b"fLaC\x00\x00\x00\x22", EvidenceType.AUDIO),
+    "aif": (b"FORM\x00\x00\xad\x30AIFFCOMM", EvidenceType.AUDIO),
+    "aiff": (b"FORM\x00\x00\xad\x30AIFCFVER", EvidenceType.AUDIO),
+    "amr": (b"#!AMR\n\x3c", EvidenceType.AUDIO),
+    "m4v": (b"\x00\x00\x00\x20ftypM4V \x00\x00\x00\x01", EvidenceType.VIDEO),
+    "mov": (b"\x00\x00\x00\x14ftypqt  \x00\x00\x00\x00", EvidenceType.VIDEO),
+    "3gp": (b"\x00\x00\x00\x18ftyp3gp4\x00\x00\x00\x00", EvidenceType.VIDEO),
+    "webm": (b"\x1aE\xdf\xa3\x9fB\x86\x81\x01", EvidenceType.VIDEO),
+    "mkv": (b"\x1aE\xdf\xa3\xa3B\x86\x81\x01", EvidenceType.VIDEO),
+    "avi": (b"RIFF\x00\x10\x00\x00AVI LIST", EvidenceType.VIDEO),
+    "jpeg": (b"\xff\xd8\xff\xe1\x00\x18Exif\x00\x00", EvidenceType.IMAGE),
+    "gif": (b"GIF89a\x01\x00\x01\x00", EvidenceType.IMAGE),
+    "webp": (b"RIFF\x24\x00\x00\x00WEBPVP8 ", EvidenceType.IMAGE),
+    "heic": (b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00", EvidenceType.IMAGE),
+    "heif": (b"\x00\x00\x00\x18ftypmif1\x00\x00\x00\x00", EvidenceType.IMAGE),
+    "docx": (b"PK\x03\x04\x14\x00\x06\x00", EvidenceType.DOCUMENT),
+    "xlsx": (b"PK\x03\x04\x14\x00\x06\x00", EvidenceType.DOCUMENT),
+    "log": (b"2026-10-10 21:12:00 door LOADING-BAY open\n", EvidenceType.TEXT),
+    "md": (b"# Shift notes\nAlarm heard near the bay.\n", EvidenceType.TEXT),
 }
 
 WINDOWS_EXECUTABLE = b"MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00\xff\xff\x00\x00"
@@ -96,6 +122,10 @@ def test_valid_csv_is_accepted_as_csv():
     assert detect_type("shift-log.csv", CSV_BYTES) == EvidenceType.CSV
 
 
+def test_every_allowed_extension_has_a_real_sample_here():
+    assert set(VALID_UPLOADS) == set(ALLOWED_EXTENSIONS)
+
+
 def test_every_allowed_extension_is_accepted_for_its_own_bytes():
     for extension, (head, expected) in VALID_UPLOADS.items():
         assert detect_type(f"evidence.{extension}", head) is expected
@@ -129,6 +159,19 @@ def test_binary_bytes_cannot_pass_as_text():
     assert error_of(lambda: detect_type("notes.txt", b"\x7fELF\x02\x01\x01")).code == (
         "type_mismatch"
     )
+
+
+def test_renamed_files_do_not_pass_as_phone_formats():
+    for name in ("memo.m4a", "clip.mov", "voice.ogg", "photo.heic", "statement.docx"):
+        assert error_of(lambda n=name: detect_type(n, WINDOWS_EXECUTABLE)).code == "type_mismatch"
+    # A WAV is not WebP even though both are RIFF containers.
+    assert error_of(lambda: detect_type("frame.webp", VALID_UPLOADS["wav"][0])).code == (
+        "type_mismatch"
+    )
+
+
+def test_a_quicktime_file_that_opens_with_a_moov_atom_is_video():
+    assert detect_type("cam.mov", b"\x00\x00\x01\x00moov\x00\x00") is EvidenceType.VIDEO
 
 
 def test_a_mp3_frame_without_an_id3_tag_is_still_audio():
