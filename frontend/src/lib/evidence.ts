@@ -10,6 +10,11 @@ export function rowsWithEvents(events: TimelineEvent[], evidenceId: string): Map
   return map;
 }
 
+const CLOCK_METHODS: Record<string, string> = {
+  declared_in_fixture_metadata: "declared demo assumption",
+  inferred_from_anchors: "inferred from anchors",
+};
+
 /** Plain-language description of a source clock assumption. */
 export function clockLabel(clock: EvidenceItem["clock"]): string {
   const s = clock.offset_seconds;
@@ -19,7 +24,7 @@ export function clockLabel(clock: EvidenceItem["clock"]): string {
       : "Reference clock · no offset";
   }
   const direction = s > 0 ? "fast" : "slow";
-  const how = clock.method === "declared_in_fixture_metadata" ? "declared demo assumption" : clock.method;
+  const how = CLOCK_METHODS[clock.method] ?? clock.method;
   return `Runs ${Math.abs(s)} s ${direction} · ${how}`;
 }
 

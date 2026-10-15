@@ -165,7 +165,7 @@ export default async function ReportPage({ params }: { params: Promise<{ caseId:
           <ul className={styles.list}>
             <li>Log files (CSV) are parsed deterministically; video, audio and PDF extraction is simulated from seed metadata in this demo.</li>
             <li>Source times are never overwritten. Normalized times are derived and carry the rule that produced them.</li>
-            <li>The E-02 clock offset is declared in the fixture metadata, not inferred from the evidence.</li>
+            <li>The E-02 clock offset is inferred from two anchor moments it shares with reference-clock sources (RULE-TIME-002). The anchor events themselves are simulated from seed metadata.</li>
             <li>Conflicts come from deterministic rules with stable IDs. A conflict is a prompt for review, not proof of tampering.</li>
             <li>Results on a small synthetic case say nothing about accuracy on real investigations.</li>
           </ul>
