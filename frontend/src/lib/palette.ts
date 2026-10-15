@@ -29,6 +29,7 @@ export function paletteItems(
   const base = `/cases/${caseId}`;
   return [
     ...pages.map((p) => ({ id: `page:${p.href}`, group: "Go to" as const, label: p.label, hint: "Page", href: p.href })),
+    { id: "action:home", group: "Go to", label: "Website home", hint: "Public site", href: "/" },
     { id: "action:tour", group: "Actions", label: "Start guided demo", hint: "7 stops", href: "/dashboard?tour=1" },
     { id: "action:new", group: "Actions", label: "Create case", hint: "New", href: "/cases/new" },
     { id: "action:md", group: "Actions", label: "Download report (Markdown)", hint: caseId, href: `${base}/report/download?format=md`, download: true },
