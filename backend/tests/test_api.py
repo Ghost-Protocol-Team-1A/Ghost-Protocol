@@ -244,3 +244,38 @@ def test_unknown_case_cannot_receive_evidence(client):
     res = client.post("/api/cases/CASE-999/evidence", files={"file": ("x.csv", CSV_BYTES)})
     assert res.status_code == 404
     assert res.json()["error"]["code"] == "case_not_found"
+
+
+def test_create_case_keeps_scope_and_classification(client):
+    res = client.post(
+        "/api/cases",
+        json={
+            "title": "Loading dock review",
+            "scope": "Order of door events only",
+            "classification": "internal",
+            "incident_start": "2026-10-12T08:00:00+01:00",
+            "incident_end": "2026-10-12T09:00:00+01:00",
+        },
+    )
+    case = res.json()["case"]
+    assert case["scope"] == "Order of door events only"
+    assert case["classification"] == "internal"
+
+
+def test_unknown_classification_is_rejected(client):
+    res = client.post(
+        "/api/cases",
+        json={
+            "title": "Loading dock review",
+            "classification": "top-secret",
+            "incident_start": "2026-10-12T08:00:00+01:00",
+            "incident_end": "2026-10-12T09:00:00+01:00",
+        },
+    )
+    assert res.status_code == 422
+
+
+def test_demo_case_is_marked_synthetic(client):
+    case = client.get("/api/cases/CASE-001").json()["case"]
+    assert case["classification"] == "synthetic"
+    assert "Not in scope" in case["scope"]
