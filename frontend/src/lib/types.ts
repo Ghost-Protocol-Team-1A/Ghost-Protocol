@@ -35,7 +35,7 @@ export interface CaseSummary {
 export interface EvidenceItem {
   id: string;
   case_id: string;
-  type: "video" | "audio" | "csv" | "json" | "pdf" | "text" | "image";
+  type: "video" | "audio" | "csv" | "json" | "pdf" | "text" | "image" | "document";
   source_name: string;
   original_filename: string;
   sha256: string | null;
