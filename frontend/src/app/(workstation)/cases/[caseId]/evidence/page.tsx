@@ -29,7 +29,20 @@ export default async function EvidencePage({
   }
   const [evidence, events, conflicts] = data;
   const item = evidence.find((x) => x.id === wanted) ?? evidence[0];
-  if (!item) return <p className={styles.muted}>No evidence has been added to this case.</p>;
+  if (!item) {
+    return (
+      <section>
+        <h1 className={`${panel.pageTitle} ${styles.cyan}`}>Evidence viewer</h1>
+        <p className={panel.pageLead}>{caseId} has no evidence yet.</p>
+        <div className={panel.panel}>
+          <p className={styles.muted}>
+            Evidence added to this case will appear here with its SHA-256, source clock and the
+            events extracted from it. Every addition is recorded in the audit trail.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   const original = await api.original(caseId, item.id).catch(() => undefined);
   const linked = events.filter((e) => e.evidence_id === item.id);

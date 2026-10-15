@@ -4,6 +4,7 @@ import styles from "./workstation.module.css";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/cases", label: "Cases" },
   { href: "/cases/CASE-001/timeline", label: "Timeline" },
   { href: "/cases/CASE-001/conflicts", label: "Conflicts" },
   { href: "/cases/CASE-001/hypotheses", label: "Hypotheses" },
