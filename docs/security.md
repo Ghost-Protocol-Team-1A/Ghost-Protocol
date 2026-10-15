@@ -14,6 +14,7 @@ demo only.**
 | Upload size | Limit enforced while streaming (`MAX_UPLOAD_MB`, default 50) | `storage/hashing.py` |
 | Path safety | Files are stored under their SHA-256; the uploaded filename is cleaned and kept only as metadata, never used in a path | `storage/` |
 | Duplicate detection | The same bytes uploaded twice return the existing item | upload route *(#19)* |
+| Serving originals | Originals are streamed back byte-for-byte for playback with `nosniff`; everything except PDF also gets a `sandbox` CSP, so a stored file cannot run as a page | `GET …/evidence/{id}/file` |
 | Evidence is data | Uploaded files are never executed, parsed as code, or followed as instructions | whole pipeline |
 | No third parties | Evidence is not sent to any external or AI service | whole pipeline |
 | Input validation | Pydantic models on every write; length limits on titles, notes and descriptions; timezone required on case windows | `models/domain.py` |
@@ -27,7 +28,8 @@ demo only.**
 ## What it does not do
 
 - **No authentication or authorization.** Anyone who can reach the app can read every case,
-  upload evidence, record reviews and reset the demo. The reviewer name on decisions defaults to `BJ` and is not verified.
+  upload evidence, record reviews and reset the demo. The reviewer name on decisions comes from the demo sign-in (a cookie, no password) or defaults to `BJ`, and is not verified.
+- **Accepted formats** cover common phone, camera and office output (33 extensions: MP4/MOV/WebM video, M4A/MP3/WAV/AAC/OGG/Opus/AMR audio, JPEG/HEIC/PNG images, PDF/DOCX/XLSX, CSV/JSON/text). Each is checked against its byte signature. Uploaded media is stored and playable but **not yet extracted** into timeline events.
 - **No encryption at rest.** Uploaded files are stored as plain files on the server's disk.
 - **No persistence guarantees.** Cases and the audit trail live in memory and are lost on restart
   or reset. The audit trail is append-only in code, but not tamper-evident.
