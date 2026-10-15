@@ -311,3 +311,8 @@ Ghost Protocol is an investigative aid, not a judge.
 - Authentication in the demo is not production security; the deployment is for a controlled demo only.
 - Results on two small synthetic cases say nothing about accuracy on real investigations.
 - "Ghost Protocol" is a working name; a similar name exists in this space (see `docs/competitors.md` once written).
+
+## Contact
+
+Questions about the project or the demo: **info@rayvme.com** (RAYVMEDIA PLUS LTD, Lagos,
+Nigeria). The contact form on the public site is a demo and does not send messages.
