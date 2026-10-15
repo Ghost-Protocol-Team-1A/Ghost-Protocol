@@ -8,6 +8,7 @@ const NAV = [
   { href: "/cases/CASE-001/timeline", label: "Timeline" },
   { href: "/cases/CASE-001/conflicts", label: "Conflicts" },
   { href: "/cases/CASE-001/hypotheses", label: "Hypotheses" },
+  { href: "/cases/CASE-001/intake", label: "Evidence intake" },
   { href: "/cases/CASE-001/evidence", label: "Evidence" },
   { href: "/cases/CASE-001/report", label: "Report" },
   { href: "/cases/CASE-001/audit", label: "Audit trail" },
