@@ -8,19 +8,130 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--gp-obsidian);
+  background: var(--gp-ink);
   color: var(--gp-text);
   font-family: var(--gp-font);
   font-size: var(--gp-text-md);
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  --gp-mono: var(--font-mono), "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
 }
 
 a {
-  color: var(--gp-cyan);
+  color: var(--gp-lime);
+  text-underline-offset: 3px;
+}
+
+::selection {
+  background: var(--gp-lime);
+  color: var(--gp-ink);
 }
 
 :focus-visible {
   outline: none;
   box-shadow: var(--gp-focus);
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+/* ---- Shared primitives (Figma: v2 · DESIGN SYSTEM / Components & states) ---- */
+
+.gp-mono {
+  font-family: var(--gp-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-eyebrow {
+  font-family: var(--gp-mono);
+  font-size: var(--gp-text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gp-lime);
+  margin: 0;
+}
+
+.gp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: var(--gp-radius-pill);
+  font: inherit;
+  font-size: var(--gp-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.gp-btn:hover {
+  transform: translateY(-1px);
+}
+
+.gp-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.gp-btn-lime {
+  background: var(--gp-lime);
+  color: var(--gp-ink);
+}
+
+.gp-btn-ghost {
+  background: transparent;
+  color: var(--gp-text);
+  border-color: #2a2e35;
+}
+
+.gp-btn-ghost:hover {
+  border-color: var(--gp-text-subtle);
+}
+
+.gp-btn-quiet {
+  background: transparent;
+  color: var(--gp-text-muted);
+}
+
+.gp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--gp-radius-pill);
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid #2a2e35;
+  color: var(--gp-text-soft);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.gp-chip-lime {
+  border-color: transparent;
+  background: var(--gp-lime-soft);
+  color: var(--gp-lime);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
