@@ -86,6 +86,9 @@ class ClockAssumption(BaseModel):
     offset_seconds: int = 0
     method: str = "reference_clock"
     note: str = ""
+    # For method "infer_from_anchors": this source's event ID -> the reference event it records.
+    anchors: dict[str, str] = Field(default_factory=dict)
+    spread_seconds: int = 0
 
 
 class EvidenceItem(BaseModel):
