@@ -104,6 +104,40 @@
   gap: var(--gp-space-4);
 }
 
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-3);
+}
+
+.identity :global(.gp-btn) {
+  height: 36px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gp-lime);
+  color: var(--gp-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  font-size: var(--gp-text-sm);
+}
+
+.role {
+  color: var(--gp-text-subtle);
+  font-size: var(--gp-text-xs);
+}
+
 @media (max-width: 900px) {
   .sidebar {
     position: static;
@@ -127,5 +161,10 @@
 
   .topbar {
     padding: 0 var(--gp-space-4);
+  }
+
+  .hideSmall,
+  .who {
+    display: none;
   }
 }
