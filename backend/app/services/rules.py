@@ -17,6 +17,7 @@ from app.models.domain import (
     EvidenceItem,
     Severity,
 )
+from app.services.offsets import INFERRED_METHOD, infer_offset
 
 DUPLICATE_KEYS = ("badge_id", "door", "event_code")
 
@@ -100,7 +101,7 @@ def rule_time_001(evidence: list[EvidenceItem], events: list[Event], **_: object
     findings: list[Finding] = []
     for item in evidence:
         offset = item.clock.offset_seconds
-        if not offset:
+        if not offset or item.clock.method == INFERRED_METHOD:
             continue
         affected = [e for e in events if e.evidence_id == item.id]
         example = ""
@@ -133,6 +134,54 @@ def rule_time_001(evidence: list[EvidenceItem], events: list[Event], **_: object
     return findings
 
 
+def rule_time_002(evidence: list[EvidenceItem], events: list[Event], **_: object) -> list[Finding]:
+    """A source whose clock offset was inferred from anchor events, not declared."""
+    findings: list[Finding] = []
+    for item in evidence:
+        if item.clock.method != INFERRED_METHOD:
+            continue
+        estimate = infer_offset(item, item.clock.anchors, events, evidence)
+        if estimate is None:
+            continue
+        offset = estimate.offset_seconds
+        direction = "fast" if offset > 0 else "slow"
+        by_id = {e.id: e for e in events}
+        pairs = "; ".join(
+            f"{a.event_id} at {_hhmmss(by_id[a.event_id].source_time)} vs "
+            f"{a.reference_event_id} ({a.reference_evidence_id}) at "
+            f"{_hhmmss(by_id[a.reference_event_id].source_time)}, {a.delta_seconds:+d} s"
+            for a in estimate.anchors
+        )
+        agreement = (
+            "The estimates agree exactly."
+            if estimate.spread_seconds == 0
+            else f"The estimates differ by up to {estimate.spread_seconds} s."
+        )
+        affected = [e.id for e in events if e.evidence_id == item.id]
+        findings.append(
+            Finding(
+                rule_id="RULE-TIME-002",
+                type=ConflictType.CLOCK_OFFSET,
+                severity=Severity.MEDIUM,
+                evidence_ids=[item.id],
+                event_ids=affected,
+                explanation=(
+                    f"{item.id} ({item.source_name}) clock runs {abs(offset)} s {direction}, "
+                    f"inferred from {len(estimate.anchors)} moments it shares with "
+                    f"reference-clock sources: {pairs}. {agreement} "
+                    f"{len(affected)} events are normalized by {-offset:+d} s. "
+                    "Original times are preserved."
+                ),
+                detection_method="median of anchor deltas against reference-clock sources",
+                uncertain=(
+                    "Whether the offset held outside the anchored moments, and whether each "
+                    "anchor pair really records the same moment."
+                ),
+            )
+        )
+    return findings
+
+
 def rule_claim_001(claims: list[Claim], **_: object) -> list[Finding]:
     """An identity claim that no source supports."""
     findings: list[Finding] = []
@@ -156,7 +205,12 @@ def rule_claim_001(claims: list[Claim], **_: object) -> list[Finding]:
     return findings
 
 
-RULES: list[Callable[..., list[Finding]]] = [rule_dup_001, rule_time_001, rule_claim_001]
+RULES: list[Callable[..., list[Finding]]] = [
+    rule_dup_001,
+    rule_time_001,
+    rule_time_002,
+    rule_claim_001,
+]
 
 
 def apply_findings_to_events(events: list[Event], findings: list[Finding]) -> None:
