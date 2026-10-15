@@ -1,0 +1,98 @@
+.card {
+  position: fixed;
+  right: var(--gp-space-6);
+  bottom: var(--gp-space-6);
+  z-index: 30;
+  width: min(380px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-3);
+  padding: var(--gp-space-6);
+  border-radius: var(--gp-radius-lg);
+  border: 1px solid var(--gp-lime);
+  background: var(--gp-surface);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 0 6px var(--gp-lime-soft);
+  animation: rise 0.25s ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-lime);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.close {
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--gp-text-muted);
+  text-decoration: none;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+}
+
+.progress span {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gp-border);
+}
+
+.progress .done {
+  background: var(--gp-lime);
+}
+
+.title {
+  margin: var(--gp-space-2) 0 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.body {
+  margin: 0;
+  color: var(--gp-text-soft);
+  font-size: var(--gp-text-sm);
+  line-height: 1.6;
+}
+
+.away {
+  margin: 0;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--gp-space-2);
+}
+
+.actions :global(.gp-btn) {
+  height: 40px;
+}
+
+@media (max-width: 640px) {
+  .card {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+}
