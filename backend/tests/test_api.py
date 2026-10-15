@@ -87,3 +87,49 @@ def test_reset_removes_live_evidence(client):
     client.post("/api/demo/reset")
     assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 6
     assert client.get("/api/cases/CASE-001/changes").json() == []
+
+
+def test_create_case_starts_empty_and_is_audited(client):
+    res = client.post(
+        "/api/cases",
+        json={
+            "title": "Loading dock review",
+            "incident_start": "2026-10-12T08:00:00+01:00",
+            "incident_end": "2026-10-12T09:00:00+01:00",
+        },
+    )
+    assert res.status_code == 201
+    body = res.json()
+    assert body["case"]["id"] == "CASE-002"
+    assert body["evidence_count"] == 0 and body["open_conflicts"] == 0
+    assert body["case"]["fictional"] is False
+    assert client.get("/api/cases/CASE-002/timeline").json() == []
+    assert client.get("/api/cases/CASE-002/staged").json() == []
+    assert client.get("/api/cases/CASE-002/audit").json()[0]["action"] == "Case created"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"title": "ab", "incident_start": "2026-10-12T08:00:00+01:00",
+         "incident_end": "2026-10-12T09:00:00+01:00"},
+        {"title": "Valid title", "incident_start": "2026-10-12T09:00:00+01:00",
+         "incident_end": "2026-10-12T08:00:00+01:00"},
+        {"title": "Valid title", "incident_start": "2026-10-12T08:00:00",
+         "incident_end": "2026-10-12T09:00:00"},
+    ],
+)
+def test_create_case_rejects_bad_input(client, payload):
+    res = client.post("/api/cases", json=payload)
+    assert res.status_code == 422
+    assert res.json()["error"]["code"] == "invalid_request"
+
+
+def test_reset_removes_created_cases(client):
+    client.post(
+        "/api/cases",
+        json={"title": "Temporary", "incident_start": "2026-10-12T08:00:00+01:00",
+              "incident_end": "2026-10-12T09:00:00+01:00"},
+    )
+    client.post("/api/demo/reset")
+    assert [c["case"]["id"] for c in client.get("/api/cases").json()] == ["CASE-001"]
