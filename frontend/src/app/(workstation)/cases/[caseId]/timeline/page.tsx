@@ -49,7 +49,7 @@ export default async function TimelinePage({
   return (
     <section>
       <h1 className={panel.pageTitle}>Investigation timeline</h1>
-      <p className={`${panel.pageLead} ${styles.coralText}`}>
+      <p className={panel.pageLead}>
         Review the timeline alongside its source records and contradictions.
       </p>
 

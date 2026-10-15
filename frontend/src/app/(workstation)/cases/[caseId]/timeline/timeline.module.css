@@ -64,7 +64,7 @@
   font-size: var(--gp-text-sm);
   padding: var(--gp-space-2) var(--gp-space-4);
   border-radius: var(--gp-radius);
-  border: 1px solid var(--gp-cyan);
+  border: 1px solid var(--gp-lime);
   background: transparent;
   color: var(--gp-cyan);
   cursor: pointer;
@@ -106,7 +106,7 @@
 }
 
 .row[aria-current="true"] {
-  box-shadow: inset 2px 0 0 var(--gp-cyan);
+  box-shadow: inset 2px 0 0 var(--gp-lime);
 }
 
 .marker {
@@ -162,7 +162,7 @@
 }
 
 .selected {
-  border-color: var(--gp-cyan);
+  border-color: var(--gp-lime);
 }
 
 .selectedTitle {

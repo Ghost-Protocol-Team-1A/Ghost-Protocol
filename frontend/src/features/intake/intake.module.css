@@ -3,7 +3,7 @@
   justify-items: center;
   gap: var(--gp-space-3);
   padding: var(--gp-space-8) var(--gp-space-4);
-  border: 1px dashed var(--gp-cyan);
+  border: 1px dashed var(--gp-lime);
   border-radius: var(--gp-radius);
   background: var(--gp-obsidian);
   text-align: center;
@@ -36,7 +36,7 @@
   margin-right: var(--gp-space-3);
   padding: var(--gp-space-2) var(--gp-space-4);
   border-radius: var(--gp-radius);
-  border: 1px solid var(--gp-cyan);
+  border: 1px solid var(--gp-lime);
   background: transparent;
   color: var(--gp-cyan);
   cursor: pointer;
