@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { signOut } from "@/app/(auth)/actions";
+import { CommandPalette } from "@/features/palette/CommandPalette";
 import { Sidebar } from "@/features/shell/Sidebar";
+import { TourCard } from "@/features/tour/TourCard";
 import shell from "@/features/shell/shell.module.css";
 import { initials, ROLE_LABELS } from "@/lib/identity";
 import { currentIdentity } from "@/lib/session";
@@ -12,7 +15,10 @@ export default async function WorkstationLayout({ children }: { children: React.
     <div className={styles.shell}>
       <Sidebar />
       <header className={shell.topbar}>
-        <span className="gp-chip gp-chip-lime">Synthetic demo data</span>
+        <div className={shell.topLeft}>
+          <CommandPalette />
+          <span className={`gp-chip gp-chip-lime ${shell.hideSmall}`}>Synthetic demo data</span>
+        </div>
         <div className={shell.topRight}>
           <span className={`gp-chip ${shell.hideSmall}`}>Investigative aid · not a verdict</span>
           {identity ? (
@@ -38,6 +44,9 @@ export default async function WorkstationLayout({ children }: { children: React.
         </div>
       </header>
       <main className={styles.main}>{children}</main>
+      <Suspense fallback={null}>
+        <TourCard />
+      </Suspense>
     </div>
   );
 }
