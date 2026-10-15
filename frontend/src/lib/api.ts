@@ -15,7 +15,8 @@ import type {
   TimelineEvent,
 } from "./types";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Server-side only: pages, server actions and route handlers call the API; browsers never do.
+const BASE = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export class ApiError extends Error {
   constructor(
@@ -84,8 +85,19 @@ export const api = {
       return false;
     }
   },
-  /** Browser download URL for the exported report. */
-  reportUrl: (id: string, format: "md" | "json") => `${BASE}/api/cases/${id}/report?format=${format}`,
+  /** Download link for the report. Served by the website, which fetches it from the API. */
+  reportUrl: (id: string, format: "md" | "json") => `/cases/${id}/report/download?format=${format}`,
+  /** Raw report response from the API, for the download route to pass through. */
+  reportFile: (id: string, format: "md" | "json") =>
+    fetch(`${BASE}/api/cases/${id}/report?format=${format}`, { cache: "no-store" }),
+  /** API liveness, for the website health check. */
+  health: async (): Promise<boolean> => {
+    try {
+      return (await fetch(`${BASE}/health`, { cache: "no-store" })).ok;
+    } catch {
+      return false;
+    }
+  },
   /** Original log rows, or null when the item has no stored file (simulated extraction). */
   original: async (id: string, evidenceId: string): Promise<OriginalRecord | null> => {
     try {
