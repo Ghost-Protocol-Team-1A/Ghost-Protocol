@@ -59,8 +59,30 @@
   color: var(--gp-lime);
 }
 
-.caseCard {
+.home {
   margin-top: auto;
+  margin-bottom: var(--gp-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-3);
+  padding: var(--gp-space-3);
+  border-radius: 10px;
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+  text-decoration: none;
+}
+
+.home:hover {
+  color: var(--gp-text);
+  background: var(--gp-graphite);
+}
+
+.back {
+  display: inline-flex;
+  transform: rotate(180deg);
+}
+
+.caseCard {
   padding: var(--gp-space-4);
   border: 1px solid var(--gp-border);
   border-radius: var(--gp-radius-lg);

@@ -20,7 +20,7 @@ export function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brand}>
-        <Logo href="/dashboard" />
+        <Logo href="/" />
       </div>
       <p className={styles.group}>Workspace</p>
       <nav aria-label="Workspace" className={styles.nav}>
@@ -36,6 +36,12 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
+      <Link href="/" className={styles.home}>
+        <span className={styles.back} aria-hidden="true">
+          <Icon name="arrow" size={14} />
+        </span>
+        Back to website
+      </Link>
       <div className={styles.caseCard}>
         <p className="gp-mono">{CASE}</p>
         <p>Warehouse incident</p>
