@@ -1,25 +1,42 @@
 .badge {
-  display: inline-block;
-  font-size: var(--gp-text-xs);
-  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--gp-radius-pill);
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 2px var(--gp-space-2);
-  border: 1px solid currentColor;
-  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .supported {
   color: var(--gp-state-supported);
+  background: rgba(184, 245, 74, 0.12);
 }
 
 .contradicted {
   color: var(--gp-state-contradicted);
+  background: rgba(255, 107, 94, 0.14);
 }
 
 .inferred {
   color: var(--gp-state-inferred);
+  background: rgba(125, 180, 255, 0.14);
 }
 
 .unresolved {
   color: var(--gp-state-unresolved);
+  background: rgba(245, 185, 79, 0.14);
 }
