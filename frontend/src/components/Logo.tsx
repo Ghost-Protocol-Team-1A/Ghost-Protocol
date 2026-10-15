@@ -1,26 +1,30 @@
 import Link from "next/link";
 import styles from "./Logo.module.css";
 
-/** Shield = chain of custody, check = reviewed evidence, cyan dot = provenance (brand board 70:2). */
+/** Solid lime shield with an ink check (Figma: v2 · BRAND). Shield = chain of custody, check = reviewed. */
+export function LogoMark({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className={styles.mark}>
+      <path
+        d="M16 2.5 4.5 7v8.4c0 6.9 4.7 12.4 11.5 14.1 6.8-1.7 11.5-7.2 11.5-14.1V7L16 2.5Z"
+        fill="var(--gp-lime)"
+      />
+      <path
+        d="m10.5 16.2 3.7 3.7 7.3-7.6"
+        fill="none"
+        stroke="var(--gp-ink)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className={styles.logo} aria-label="Ghost Protocol home">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-        <path
-          d="M14 3 5 6.5v6.8c0 5.6 3.8 10.1 9 11.7 5.2-1.6 9-6.1 9-11.7V6.5L14 3Z"
-          stroke="var(--gp-lime)"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m9.8 14.2 3 3 5.6-6"
-          stroke="var(--gp-lime)"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="22.5" cy="5.5" r="2.2" fill="var(--gp-cyan)" />
-      </svg>
+      <LogoMark />
       <span>GHOST PROTOCOL</span>
     </Link>
   );
