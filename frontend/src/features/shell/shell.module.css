@@ -1,0 +1,131 @@
+.sidebar {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-1);
+  padding: var(--gp-space-6) var(--gp-space-4);
+  border-right: 1px solid var(--gp-hairline);
+  background: var(--gp-ink);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.brand {
+  padding: var(--gp-space-1) var(--gp-space-3) var(--gp-space-6);
+}
+
+.group {
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gp-text-subtle);
+  padding: var(--gp-space-2) var(--gp-space-3);
+  margin: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-3);
+  height: 40px;
+  padding: 0 var(--gp-space-3);
+  border-radius: var(--gp-radius);
+  font-size: var(--gp-text-sm);
+  color: var(--gp-text-muted);
+  text-decoration: none;
+}
+
+.item:hover {
+  color: var(--gp-text);
+  background: var(--gp-surface);
+}
+
+.item[aria-current="page"] {
+  color: var(--gp-text);
+  background: var(--gp-surface-raised);
+  box-shadow: inset 2px 0 0 var(--gp-lime);
+}
+
+.item[aria-current="page"] svg {
+  color: var(--gp-lime);
+}
+
+.caseCard {
+  margin-top: auto;
+  padding: var(--gp-space-4);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-radius-lg);
+  background: var(--gp-surface);
+  font-size: var(--gp-text-sm);
+}
+
+.caseCard p {
+  margin: 0;
+}
+
+.caseCard p:first-child {
+  color: var(--gp-lime);
+  font-size: var(--gp-text-xs);
+}
+
+.muted {
+  color: var(--gp-text-subtle);
+  font-size: var(--gp-text-xs);
+}
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gp-space-4);
+  height: 64px;
+  padding: 0 var(--gp-space-8);
+  border-bottom: 1px solid var(--gp-hairline);
+  background: rgba(10, 11, 13, 0.85);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-4);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--gp-hairline);
+  }
+
+  .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .item span {
+    display: inline;
+  }
+
+  .caseCard {
+    display: none;
+  }
+
+  .topbar {
+    padding: 0 var(--gp-space-4);
+  }
+}
