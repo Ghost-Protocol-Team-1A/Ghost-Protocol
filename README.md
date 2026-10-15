@@ -10,11 +10,11 @@ whether the evidence **supports**, **contradicts**, merely **infers**, or **cann
 It does not decide who is responsible. It shows investigators what the evidence says and what
 it doesn't.
 
-> **Status: engine and API running; screens in progress.**
-> CASE-001 loads, times are normalized, and the three rules detect C-01, C-02 and C-03 (73
-> backend tests). The timeline page renders live API data, report export serves a real
-> download, and evidence upload validates, hashes and stores files. Sections marked *planned*
-> are not implemented yet.
+> **Status: the full demo workflow runs end to end.**
+> CASE-001 loads; times are normalized; three rules detect C-01, C-02 and C-03; and an
+> investigator can filter the timeline, inspect conflicts, record review decisions, compare
+> hypotheses, upload evidence, add evidence live, and export the report. 102 backend and 25
+> frontend tests run on every pull request. Open: the audit trail page (#31, in review).
 
 ---
 
@@ -32,6 +32,7 @@ it doesn't.
 - [Design](#design)
 - [Repository layout](#repository-layout)
 - [Running locally](#running-locally)
+- [Documentation](#documentation)
 - [Team](#team)
 - [Build plan](#build-plan)
 - [Responsible use](#responsible-use)
@@ -147,32 +148,39 @@ adding anything the demo needs.
 
 ## API
 
-All endpoints below are live except the two marked *planned*. FastAPI serves the schema at `/docs`.
+All endpoints are live. FastAPI serves the schema at `/docs`; details are in
+[docs/architecture.md](docs/architecture.md#api).
 
-| Method | Path                                   | Purpose |
-| ------ | -------------------------------------- | ------- |
-| GET    | `/health`                              | Liveness |
-| GET    | `/api/cases`                           | List cases |
-| POST   | `/api/cases`                           | Create a case *(planned)* |
-| GET    | `/api/cases/{case_id}`                 | Case overview and counts |
-| GET    | `/api/cases/{case_id}/evidence`        | Evidence inventory and processing status |
-| POST   | `/api/cases/{case_id}/evidence`        | Upload evidence (validated, hashed, stored) |
-| GET    | `/api/evidence/{evidence_id}`          | Evidence metadata and provenance |
-| GET    | `/api/cases/{case_id}/timeline`        | Events with source and normalized time |
-| GET    | `/api/cases/{case_id}/conflicts`       | Rule output with evidence links |
-| GET    | `/api/cases/{case_id}/claims`          | Claims with state and citations |
-| GET    | `/api/cases/{case_id}/hypotheses`      | Hypotheses with supporting and contradicting evidence |
-| POST   | `/api/reviews`                         | Record a reviewer decision *(planned)* |
-| GET    | `/api/cases/{case_id}/audit`           | Audit trail |
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| GET    | `/health` | Liveness |
+| GET    | `/api/cases` | List cases |
+| POST   | `/api/cases` | Create an empty case (incident window must include a timezone) |
+| GET    | `/api/cases/{case_id}` | Case overview and counts |
+| GET    | `/api/cases/{case_id}/evidence` | Evidence inventory and processing status |
+| POST   | `/api/cases/{case_id}/evidence` | Upload evidence (validated, hashed, stored by digest) |
+| GET    | `/api/evidence/{evidence_id}` | Evidence metadata and provenance |
+| GET    | `/api/cases/{case_id}/evidence/{evidence_id}/original` | Original log rows, read-only |
+| GET    | `/api/cases/{case_id}/timeline` | Events with source and normalized time |
+| GET    | `/api/cases/{case_id}/conflicts` | Rule output with evidence links and review history |
+| GET    | `/api/cases/{case_id}/claims` | Claims with state and citations |
+| GET    | `/api/cases/{case_id}/hypotheses` | Hypotheses with supporting and contradicting evidence |
+| POST   | `/api/cases/{case_id}/reviews` | Record a reviewer decision (conflicts) or note (hypotheses) |
+| GET    | `/api/cases/{case_id}/audit` | Audit trail |
+| GET    | `/api/cases/{case_id}/staged` | Evidence held back for the live demo |
+| POST   | `/api/cases/{case_id}/staged/{evidence_id}` | Add it, re-run the rules, report what changed and what did not |
+| GET    | `/api/cases/{case_id}/changes` | All change summaries |
 | GET    | `/api/cases/{case_id}/report?format=md\|json` | Report download (Markdown or JSON) |
-| POST   | `/api/demo/reset`                      | Restore CASE-001 to its seeded state |
+| POST   | `/api/demo/reset` | Restore CASE-001 to its seeded state |
 
 Errors share one shape: `{"error": {"code": "...", "message": "...", "details": {...}}}`.
 Stack traces are never returned.
 
 ## Data model
 
-*Planned.* Core tables and their key fields:
+Today the demo keeps cases in memory and rebuilds them from the seed on reset (see
+[docs/architecture.md](docs/architecture.md#data-storage)). For a database-backed version, these
+are the intended tables:
 
 | Table             | Key fields |
 | ----------------- | ---------- |
@@ -265,6 +273,21 @@ comes from environment variables; copy `.env.example` to `.env` and never commit
 
 ---
 
+## Documentation
+
+| Document | What it covers |
+| --- | --- |
+| [docs/demo-scenario.md](docs/demo-scenario.md) | The fictional case, expected answers and acceptance checklist |
+| [docs/demo-script.md](docs/demo-script.md) | Three-minute demo, second by second, with fallbacks |
+| [docs/architecture.md](docs/architecture.md) | How it is built: pipeline, rules, API, storage, decisions |
+| [docs/security.md](docs/security.md) | Security controls, gaps and what a real deployment needs |
+| [docs/evaluation.md](docs/evaluation.md) | How we verify it works; rehearsal checklist |
+| [docs/blind-test.md](docs/blind-test.md) | CASE-002, a case the engine was not built around |
+| [docs/competitors.md](docs/competitors.md) | Existing products and how Ghost Protocol differs |
+| [docs/figma-review.md](docs/figma-review.md) | Every Figma frame compared with the built app |
+| [docs/ci.md](docs/ci.md) | What runs on every pull request |
+| [docs/team-tasks.md](docs/team-tasks.md) | Who owns what |
+
 ## Team
 
 | Member        | Responsibility |
@@ -311,7 +334,7 @@ Ghost Protocol is an investigative aid, not a judge.
 - The CASE-001 clock offset is declared in the fixture, not inferred from the evidence; the UI says so.
 - Authentication in the demo is not production security; the deployment is for a controlled demo only.
 - Results on two small synthetic cases say nothing about accuracy on real investigations.
-- "Ghost Protocol" is a working name; a similar name exists in this space (see `docs/competitors.md` once written).
+- "Ghost Protocol" is a working name; a similar name exists in this space (see [docs/competitors.md](docs/competitors.md)).
 
 ## Contact
 
