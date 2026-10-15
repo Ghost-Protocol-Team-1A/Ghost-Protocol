@@ -18,6 +18,9 @@ describe("evidence helpers", () => {
     expect(clockLabel({ offset_seconds: 120, method: "declared_in_fixture_metadata", note: "" })).toBe(
       "Runs 120 s fast · declared demo assumption",
     );
+    expect(clockLabel({ offset_seconds: 120, method: "inferred_from_anchors", note: "" })).toBe(
+      "Runs 120 s fast · inferred from anchors",
+    );
     expect(clockLabel({ offset_seconds: 0, method: "reference_clock", note: "" })).toBe(
       "Reference clock · no offset",
     );

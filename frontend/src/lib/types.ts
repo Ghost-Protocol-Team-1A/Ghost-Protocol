@@ -43,7 +43,14 @@ export interface EvidenceItem {
   ingested_at: string;
   processing_status: "queued" | "processing" | "extracted" | "failed";
   extraction_method: string;
-  clock: { offset_seconds: number; method: string; note: string };
+  clock: {
+    offset_seconds: number;
+    method: string;
+    note: string;
+    /** For inferred clocks: this source's event ID -> the reference event it records. */
+    anchors?: Record<string, string>;
+    spread_seconds?: number;
+  };
   simulated: boolean;
 }
 
