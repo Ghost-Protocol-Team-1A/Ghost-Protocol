@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildLanes, shiftLabel } from "./lanes";
+import { buildLanes, busiestWindow, fullWindow, shiftLabel, ticks } from "./lanes";
 import type { EvidenceItem, TimelineEvent } from "./types";
 
 const item = (id: string, source_name: string) => ({ id, source_name }) as EvidenceItem;
@@ -67,5 +67,26 @@ describe("shiftLabel", () => {
   it("shows how far normalization moved the event", () => {
     expect(shiftLabel(120)).toBe("−2:00");
     expect(shiftLabel(-90)).toBe("+1:30");
+  });
+});
+
+describe("windows", () => {
+  const at = (id: string, hhmm: string) => event({ id, normalized_time: `2026-10-10T${hhmm}:00Z` });
+  const events = [at("a", "20:00"), at("b", "20:09"), at("c", "20:10"), at("d", "20:12"), at("e", "20:16"), at("f", "21:00")];
+
+  it("finds the busiest stretch and leaves the outliers out", () => {
+    expect(busiestWindow(events, 12)).toEqual({ start: "2026-10-10T20:08:00Z", end: "2026-10-10T20:20:00Z" });
+  });
+
+  it("pads the whole span by a minute", () => {
+    expect(fullWindow(events)).toEqual({ start: "2026-10-10T19:59:00Z", end: "2026-10-10T21:01:00Z" });
+  });
+
+  it("spaces ticks evenly", () => {
+    expect(ticks({ start: "2026-10-10T20:08:00Z", end: "2026-10-10T20:20:00Z" }, 3)).toEqual([
+      "2026-10-10T20:08:00Z",
+      "2026-10-10T20:14:00Z",
+      "2026-10-10T20:20:00Z",
+    ]);
   });
 });
