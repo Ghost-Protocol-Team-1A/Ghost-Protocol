@@ -2,24 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icon, type IconName } from "@/components/Icon";
+import { Icon } from "@/components/Icon";
 import { Logo } from "@/components/Logo";
+import { CASE, NAV } from "./nav";
 import styles from "./shell.module.css";
 
-const CASE = "CASE-001";
-
-export const NAV: { href: string; label: string; icon: IconName }[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/cases", label: "Cases", icon: "cases" },
-  { href: `/cases/${CASE}/timeline`, label: "Timeline", icon: "timeline" },
-  { href: `/cases/${CASE}/graph`, label: "Graph", icon: "graph" },
-  { href: `/cases/${CASE}/conflicts`, label: "Conflicts", icon: "conflicts" },
-  { href: `/cases/${CASE}/hypotheses`, label: "Hypotheses", icon: "hypotheses" },
-  { href: `/cases/${CASE}/evidence`, label: "Evidence", icon: "evidence" },
-  { href: `/cases/${CASE}/intake`, label: "Intake", icon: "intake" },
-  { href: `/cases/${CASE}/report`, label: "Report", icon: "report" },
-  { href: `/cases/${CASE}/audit`, label: "Audit trail", icon: "audit" },
-];
+export { NAV };
 
 /** True when the current path is this nav item (or a page under it, for /cases). */
 export function isActive(pathname: string, href: string): boolean {
