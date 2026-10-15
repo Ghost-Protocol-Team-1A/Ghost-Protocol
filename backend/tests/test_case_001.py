@@ -37,9 +37,26 @@ def test_copied_log_conflict_links_both_rows():
 
 def test_clock_offset_conflict_names_e02():
     c02 = by_id(case().conflicts)["C-02"]
-    assert c02.rule_id == "RULE-TIME-001"
+    assert c02.rule_id == "RULE-TIME-002"
     assert c02.evidence_ids == ["E-02"]
-    assert "declared in the fixture" in c02.uncertain
+    assert c02.event_ids == ["EV-013", "EV-014", "EV-017"]
+    assert "120 s fast" in c02.explanation
+    assert "EV-013 at 21:14:00 vs EV-012 (E-04) at 21:12:00, +120 s" in c02.explanation
+    assert "EV-017 at 21:18:00 vs EV-016 (E-03) at 21:16:00, +120 s" in c02.explanation
+
+
+def test_e02_offset_is_inferred_not_declared():
+    clock = by_id(case().evidence)["E-02"].clock
+    assert clock.method == "inferred_from_anchors"
+    assert clock.offset_seconds == 120
+    assert clock.spread_seconds == 0
+
+
+def test_anchor_events_line_up_with_their_reference_after_normalization():
+    events = by_id(case().events)
+    assert events["EV-013"].normalized_time == events["EV-012"].normalized_time
+    assert events["EV-017"].normalized_time == events["EV-016"].normalized_time
+    assert events["EV-013"].source_time == "2026-10-10T21:14:00+01:00"
 
 
 def test_event_states():

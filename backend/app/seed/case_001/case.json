@@ -27,9 +27,10 @@
       "source_name": "Loading-bay CCTV",
       "original_filename": "bay_cam_2116.mp4",
       "clock": {
-        "offset_seconds": 120,
-        "method": "declared_in_fixture_metadata",
-        "note": "Seeded demo assumption: recorder clock runs 120 s fast against the NTP reference."
+        "offset_seconds": 0,
+        "method": "infer_from_anchors",
+        "note": "Recorder not on NTP. Offset is inferred from moments shared with reference-clock sources.",
+        "anchors": {"EV-013": "EV-012", "EV-017": "EV-016"}
       }
     },
     {
@@ -85,6 +86,13 @@
       "source_time": "2026-10-10T21:10:00+01:00"
     },
     {
+      "id": "EV-013",
+      "evidence_id": "E-02",
+      "locator": "timecode 00:17",
+      "description": "Loading-bay door opens on camera",
+      "source_time": "2026-10-10T21:14:00+01:00"
+    },
+    {
       "id": "EV-014",
       "evidence_id": "E-02",
       "locator": "timecode 00:39",
@@ -98,6 +106,13 @@
       "description": "Door alarm sounds; likely the loading-bay door",
       "source_time": "2026-10-10T21:16:00+01:00",
       "interpretation": true
+    },
+    {
+      "id": "EV-017",
+      "evidence_id": "E-02",
+      "locator": "timecode 01:17",
+      "description": "Alarm beacon above the bay door flashes",
+      "source_time": "2026-10-10T21:18:00+01:00"
     },
     {
       "id": "EV-018",
@@ -120,7 +135,7 @@
       "id": "CL-02",
       "statement": "A trolley moved through the bay at 21:14:00",
       "state": "supported",
-      "rationale": "Recorded on E-02; time normalized for the declared 120 s clock offset.",
+      "rationale": "Recorded on E-02; time normalized for the 120 s clock offset inferred from two anchors.",
       "links": [{"evidence_id": "E-02", "locator": "timecode 00:39", "relationship": "supports"}]
     },
     {
@@ -198,7 +213,7 @@
   "audit": [
     {"at": "2026-10-11T09:00:00Z", "actor": "BJ", "action": "Case created", "entity_ref": "CASE-001", "details": "Fictional demo case"},
     {"at": "2026-10-11T09:02:19Z", "actor": "BJ", "action": "Evidence ingested", "entity_ref": "E-01", "details": "entrance_cam_2110.mp4"},
-    {"at": "2026-10-11T09:20:03Z", "actor": "BJ", "action": "Time assumption recorded", "entity_ref": "E-02", "details": "Camera offset +120 s (declared)"},
+    {"at": "2026-10-11T09:20:03Z", "actor": "BJ", "action": "Time assumption recorded", "entity_ref": "E-02", "details": "Camera offset to be inferred from anchors (E-04 door, E-03 alarm)"},
     {"at": "2026-10-11T09:31:42Z", "actor": "SYS", "action": "Conflict created", "entity_ref": "C-01", "details": "RULE-DUP-001"},
     {"at": "2026-10-11T10:02:11Z", "actor": "BJ", "action": "Evidence ingested", "entity_ref": "E-06", "details": "worker_statement.pdf"}
   ]
