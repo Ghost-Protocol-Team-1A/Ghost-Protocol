@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.errors import ApiError, not_found
 from app.models.domain import (
     AuditEvent,
+    CaseCreate,
     CaseSummary,
     Claim,
     Conflict,
@@ -26,6 +27,17 @@ def get_case(case_id: str) -> CaseData:
 @router.get("/cases", response_model=list[CaseSummary])
 def list_cases() -> list[CaseSummary]:
     return [d.summary() for d in store.cases.values()]
+
+
+@router.post("/cases", response_model=CaseSummary, status_code=201)
+def create_case(body: CaseCreate) -> CaseSummary:
+    data = store.create_case(
+        body.title.strip(),
+        body.description.strip(),
+        body.incident_start.isoformat(),
+        body.incident_end.isoformat(),
+    )
+    return data.summary()
 
 
 @router.get("/cases/{case_id}", response_model=CaseSummary)
