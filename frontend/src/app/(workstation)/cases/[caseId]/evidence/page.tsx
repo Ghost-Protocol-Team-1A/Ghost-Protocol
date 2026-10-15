@@ -39,6 +39,7 @@ export default async function EvidencePage({
             Evidence added to this case will appear here with its SHA-256, source clock and the
             events extracted from it. Every addition is recorded in the audit trail.
           </p>
+          <Link href={`/cases/${caseId}/intake`}>Upload the first file →</Link>
         </div>
       </section>
     );
