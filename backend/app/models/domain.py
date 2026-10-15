@@ -59,6 +59,12 @@ class ReviewStatus(StrEnum):
     DISMISSED = "dismissed"
 
 
+class DataClassification(StrEnum):
+    SYNTHETIC = "synthetic"
+    INTERNAL = "internal"
+    CONFIDENTIAL = "confidential"
+
+
 class Case(BaseModel):
     id: str
     title: str
@@ -67,6 +73,8 @@ class Case(BaseModel):
     incident_end: str
     status: str
     fictional: bool = True
+    scope: str = Field(default="", description="What the case tries to establish, and what not")
+    classification: DataClassification = DataClassification.SYNTHETIC
 
 
 class ClockAssumption(BaseModel):
@@ -192,6 +200,8 @@ class CaseCreate(BaseModel):
 
     title: str = Field(min_length=3, max_length=120)
     description: str = Field(default="", max_length=1000)
+    scope: str = Field(default="", max_length=500)
+    classification: DataClassification = DataClassification.SYNTHETIC
     incident_start: AwareDatetime
     incident_end: AwareDatetime
 
