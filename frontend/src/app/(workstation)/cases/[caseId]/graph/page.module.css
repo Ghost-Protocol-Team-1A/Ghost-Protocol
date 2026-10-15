@@ -1,0 +1,39 @@
+.board {
+  margin-top: var(--gp-space-6);
+  padding: var(--gp-space-6);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gp-space-2) var(--gp-space-6);
+  margin: var(--gp-space-4) 0 0;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-subtle);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 24px;
+  height: 0;
+  border-top: 2px solid;
+}
+
+.solid {
+  color: #3a3f47;
+}
+
+.lime {
+  color: var(--gp-lime);
+}
+
+.dashed {
+  color: var(--gp-state-contradicted);
+  border-top-style: dashed !important;
+}

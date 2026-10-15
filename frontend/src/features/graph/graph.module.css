@@ -1,0 +1,124 @@
+.scroller {
+  overflow-x: auto;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  min-width: 960px;
+  height: auto;
+}
+
+.colLabel {
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  fill: var(--gp-text-subtle);
+}
+
+.edge {
+  fill: none;
+  stroke-width: 1.5;
+  transition: opacity 0.15s ease;
+}
+
+.edge_extracted {
+  stroke: #2a2e35;
+}
+
+.edge_supports {
+  stroke: color-mix(in srgb, var(--gp-lime) 55%, transparent);
+}
+
+.edge_contradicts,
+.edge_conflict {
+  stroke: var(--gp-state-contradicted);
+  stroke-dasharray: 5 5;
+}
+
+.edge_contradicts {
+  opacity: 0.7;
+}
+
+.hot {
+  stroke-width: 2.5;
+}
+
+.hot.edge_extracted {
+  stroke: var(--gp-text-muted);
+}
+
+.dimEdge {
+  opacity: 0.08;
+}
+
+.node {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.node rect {
+  fill: var(--gp-surface);
+  stroke: var(--gp-border);
+  stroke-width: 1;
+}
+
+.node:hover rect,
+.node:focus-visible rect {
+  stroke: var(--gp-lime);
+  stroke-width: 2;
+}
+
+.node:focus-visible {
+  outline: none;
+}
+
+.evidence rect {
+  fill: var(--gp-graphite);
+}
+
+.conflict rect {
+  stroke: color-mix(in srgb, var(--gp-state-contradicted) 60%, transparent);
+}
+
+.title {
+  font-family: var(--gp-mono);
+  font-size: 13px;
+  fill: var(--gp-text);
+}
+
+.sub {
+  font-size: 12px;
+  fill: var(--gp-text-muted);
+}
+
+.stateDot {
+  fill: var(--state, var(--gp-text-subtle));
+}
+
+.supported {
+  --state: var(--gp-state-supported);
+}
+
+.contradicted {
+  --state: var(--gp-state-contradicted);
+}
+
+.inferred {
+  --state: var(--gp-state-inferred);
+}
+
+.unresolved {
+  --state: var(--gp-state-unresolved);
+}
+
+.dim {
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge,
+  .node {
+    transition: none;
+  }
+}
