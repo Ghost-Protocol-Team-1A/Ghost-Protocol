@@ -98,7 +98,7 @@ The table below contrasts Ghost Protocol with its four closest technical and bra
 - **Conversational Synthesis:** Investigators can query case files using free-form conversational natural language.
 
 ### How Ghost Protocol Differs
-- **Deterministic Verification vs. Generative Hallucination:** Incident Lens relies on commercial generative language models (OpenAI) and cloud video APIs, which carry inherent risks of confabulation, non-deterministic phrasing, and variable accuracy across repeat runs. Ghost Protocol is 100% deterministic: every conflict and claim is computed by fixed, inspectable logic, guaranteeing identical output across repeat runs.
+- **Deterministic Verification vs. Generative Hallucination:** Incident Lens relies on commercial generative language models (OpenAI) and cloud video APIs, which carry inherent risks of confabulation, non-deterministic phrasing, and variable accuracy across repeat runs. Ghost Protocol's conflict rules and time normalization are fixed, inspectable logic, and repeat-run tests check that the same inputs give identical output.
 - **Zero Third-Party Data Exfiltration:** Incident Lens transmits sensitive video footage and investigation files to external commercial AI APIs (TwelveLabs, OpenAI). Ghost Protocol runs entirely on-premise without dispatching evidence to third-party language model providers, satisfying chain-of-custody and confidentiality requirements.
 - **Formal Epistemic Classification:** While Incident Lens returns continuous conversational text, Ghost Protocol classifies every claim into one of four distinct states:
   - **Supported:** Direct citation from an authoritative source with zero conflicting evidence.
@@ -150,7 +150,7 @@ The working name **"Ghost Protocol"** carries three significant vulnerabilities:
 
 3. **Semantic Incongruity with Core Product Principles:**
    - The word **"Ghost"** implies covert operations, secrecy, untraceable evasion, disappearance, or spooky ambiguity.
-   - In contrast, the entire value proposition of Ghost Protocol is **radical transparency, visible reasoning, explicit provenance, and explainable deterministic rules**. An investigative tool used in courtroom proceedings or regulatory reviews should evoke rigor, accuracy, and truth—not covert ops.
+   - In contrast, the entire value proposition of Ghost Protocol is **radical transparency, visible reasoning, explicit provenance, and explainable deterministic rules**. An investigative tool whose output may be reviewed by others should evoke rigor and transparency—not covert ops.
 
 ---
 
