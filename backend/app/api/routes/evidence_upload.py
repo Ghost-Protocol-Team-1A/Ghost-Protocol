@@ -17,8 +17,10 @@ from pathlib import Path
 from typing import BinaryIO
 
 from fastapi import APIRouter, Response, UploadFile
+from fastapi.responses import FileResponse
 
 from app.api.routes.cases import get_case
+from app.errors import ApiError, not_found
 from app.models.domain import (
     ClockAssumption,
     EvidenceItem,
@@ -28,7 +30,13 @@ from app.models.domain import (
 )
 from app.services.store import CaseData, store
 from app.storage.hashing import CHUNK_SIZE, sha256_stream, stored_path
-from app.storage.validation import clean_filename, detect_type, max_upload_bytes
+from app.storage.validation import (
+    MEDIA_TYPES,
+    clean_filename,
+    detect_type,
+    extension_of,
+    max_upload_bytes,
+)
 
 router = APIRouter(prefix="/api", tags=["evidence"])
 
@@ -147,3 +155,37 @@ def upload_evidence(case_id: str, file: UploadFile, response: Response) -> Evide
         data.files[item.id] = path
     store.record(case_id, "API", "Evidence uploaded", item.id, f"{label} · sha256 {digest[:12]}")
     return EvidenceUpload(**item.model_dump())
+
+
+@router.get("/cases/{case_id}/evidence/{evidence_id}/file")
+def read_evidence_file(case_id: str, evidence_id: str) -> FileResponse:
+    """Stream the original bytes of an evidence item, with Range support for audio and video.
+
+    The bytes are served exactly as stored, so their SHA-256 still matches the inventory.
+    Responses are sandboxed and never sniffed, so a stored file cannot run as a page.
+    """
+    data = get_case(case_id)
+    item = next((e for e in data.evidence if e.id == evidence_id), None)
+    if item is None:
+        raise not_found("evidence", evidence_id)
+    path = data.files.get(evidence_id)
+    if path is None and item.sha256:
+        candidate = stored_path(item.sha256)
+        path = candidate if candidate.exists() else None
+    if path is None:
+        raise ApiError(
+            404,
+            "original_not_available",
+            f"No original file is stored for {evidence_id}; its events come from seed metadata.",
+        )
+    media_type = MEDIA_TYPES.get(extension_of(item.original_filename), "application/octet-stream")
+    headers = {"X-Content-Type-Options": "nosniff", "Cache-Control": "private, max-age=3600"}
+    if media_type != "application/pdf":  # a sandboxed PDF will not open in the browser viewer
+        headers["Content-Security-Policy"] = "sandbox; default-src 'none'; media-src 'self'"
+    return FileResponse(
+        path,
+        media_type=media_type,
+        filename=item.original_filename,
+        content_disposition_type="inline",
+        headers=headers,
+    )

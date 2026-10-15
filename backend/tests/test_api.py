@@ -279,3 +279,45 @@ def test_demo_case_is_marked_synthetic(client):
     case = client.get("/api/cases/CASE-001").json()["case"]
     assert case["classification"] == "synthetic"
     assert "Not in scope" in case["scope"]
+
+
+# --- original bytes for playback ----------------------------------------------------------------
+
+M4A_BYTES = b"\x00\x00\x00\x1cftypM4A \x00\x00\x00\x00M4A mp42isom" + bytes(range(256)) * 8
+
+
+def test_a_phone_recording_uploads_and_plays_back_byte_for_byte(client):
+    res = upload(client, "voice memo.m4a", M4A_BYTES)
+    assert res.status_code == 201
+    item = res.json()
+    assert item["type"] == "audio"
+    assert item["simulated"] is True  # stored and hashed; extraction is not claimed
+
+    played = client.get(f"/api/cases/CASE-001/evidence/{item['id']}/file")
+    assert played.status_code == 200
+    assert played.content == M4A_BYTES
+    assert hashlib.sha256(played.content).hexdigest() == item["sha256"]
+    assert played.headers["content-type"] == "audio/mp4"
+    assert played.headers["x-content-type-options"] == "nosniff"
+    assert "sandbox" in played.headers["content-security-policy"]
+    assert played.headers["content-disposition"].startswith("inline")
+
+
+def test_media_supports_range_requests_for_seeking(client):
+    item = upload(client, "clip.m4a", M4A_BYTES).json()
+    part = client.get(
+        f"/api/cases/CASE-001/evidence/{item['id']}/file", headers={"Range": "bytes=0-15"}
+    )
+    assert part.status_code == 206
+    assert part.content == M4A_BYTES[:16]
+    assert part.headers["content-range"] == f"bytes 0-15/{len(M4A_BYTES)}"
+
+
+def test_seeded_logs_are_served_and_simulated_media_is_not(client):
+    log = client.get("/api/cases/CASE-001/evidence/E-04/file")
+    assert log.status_code == 200
+    assert log.content.startswith(b"row,timestamp,badge_id")
+    missing = client.get("/api/cases/CASE-001/evidence/E-01/file")
+    assert missing.status_code == 404
+    assert missing.json()["error"]["code"] == "original_not_available"
+    assert client.get("/api/cases/CASE-001/evidence/E-99/file").status_code == 404
