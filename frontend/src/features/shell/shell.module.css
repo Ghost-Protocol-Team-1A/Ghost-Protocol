@@ -98,6 +98,12 @@
   z-index: 5;
 }
 
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-4);
+}
+
 .topRight {
   display: flex;
   align-items: center;

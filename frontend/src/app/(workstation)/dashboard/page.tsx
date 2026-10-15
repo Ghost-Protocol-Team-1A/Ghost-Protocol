@@ -67,6 +67,9 @@ export default async function DashboardPage({
             {staged.length > 0 && "One piece of evidence is waiting to be added live."}
           </p>
         </div>
+        <Link href="/dashboard?tour=1" className="gp-btn gp-btn-ghost">
+          <Icon name="play" size={16} /> Start guided demo
+        </Link>
       </div>
 
       {reset && (
