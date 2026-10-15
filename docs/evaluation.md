@@ -1,7 +1,7 @@
 # Ghost Protocol — Evaluation & Acceptance Matrix
 
 > **Purpose:**  
-> This document formalizes the evaluation framework for Ghost Protocol. It turns the acceptance checklist from [docs/demo-scenario.md](file:///home/gamp/Ghost-Protocol/docs/demo-scenario.md) into an actionable verification matrix and defines standard protocols for usability, clean-machine deployment, and engine determinism.
+> This document formalizes the evaluation framework for Ghost Protocol. It turns the acceptance checklist from [docs/demo-scenario.md](demo-scenario.md) into an actionable verification matrix and defines standard protocols for usability, clean-machine deployment, and engine determinism.
 >
 > Rehearsals take place on **Day 6 (Hardening & Polish)** and **Day 7 (Final Rehearsal & Submission)**.
 
@@ -21,7 +21,7 @@ Columns:
 | **01. Exactly six evidence items after reset** | 1. Send `POST /api/demo/reset`.<br>2. Call `GET /api/cases/CASE-001/evidence`.<br>3. Verify array length is exactly 6 (`E-01` through `E-06`).<br>4. Verify `E-07` is present in `GET /api/cases/CASE-001/staged`. | PENDING | 2026-10-15 | @DANTE-1903 |
 | **02. EV-014 dual time display** | 1. Call `GET /api/cases/CASE-001/timeline`.<br>2. Find event `EV-014`.<br>3. Verify `source_time` is `2026-10-10T21:16:00+01:00`.<br>4. Verify `normalized_time` is `2026-10-10T20:14:00Z` (displayed as `21:14:00` local).<br>5. Verify `offset_seconds` is `120` (rule `offset -120 s`).<br>6. Check UI at `/cases/CASE-001/timeline` renders both values side-by-side. | PENDING | 2026-10-15 | @DANTE-1903 |
 | **03. C-01 detected by RULE-DUP-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-01`.<br>3. Verify `rule_id` equals `RULE-DUP-001`.<br>4. Verify linked evidence contains `E-04` (row 18) and `E-05` (row 7).<br>5. Verify explanation notes potential duplicate/import error and explicitly states **"Not proof of tampering"**.<br>6. Inspect UI at `/cases/CASE-001/conflicts?c=C-01`. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **04. C-02 detected by RULE-TIME-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-02`.<br>3. Verify `rule_id` equals `RULE-TIME-001`.<br>4. Verify evidence involved names `E-02` against references `E-01` and `E-04`.<br>5. Verify UI transparently states that the 120s offset is declared in fixture metadata. | PENDING | 2026-10-15 | @DANTE-1903 |
+| **04. C-02 detected by RULE-TIME-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-02`.<br>3. Verify `rule_id` equals `RULE-TIME-001`.<br>4. Verify `evidence_ids` is `["E-02"]` and the explanation says it runs 120 s fast against the reference clock.<br>5. Verify UI transparently states that the 120s offset is declared in fixture metadata. | PENDING | 2026-10-15 | @DANTE-1903 |
 | **05. Identity neutrality (no accusatory labeling)** | 1. Call `GET /api/cases/CASE-001/timeline` and `GET /api/cases/CASE-001/claims`.<br>2. Verify no person's name or identity is attached as responsible or guilty.<br>3. Verify claim `CL-04` ("The person in E-01 is the holder of badge B-117") remains in state `unresolved`.<br>4. Audit UI for any accusatory tone. | PENDING | 2026-10-15 | @DANTE-1903 |
 | **06. Evidence citation integrity** | 1. Call `GET /api/cases/CASE-001/claims`.<br>2. Iterate through all claims (`CL-01` to `CL-06`).<br>3. Assert every claim whose state is NOT `unresolved` has at least 1 valid `evidence_links` citation with non-empty `locator`.<br>4. Assert `CL-04` and `CL-06` have empty citations and state `unresolved`. | PENDING | 2026-10-15 | @DANTE-1903 |
 | **07. Reset idempotence** | 1. Trigger `POST /api/demo/reset`.<br>2. Dump JSON of `/timeline`, `/conflicts`, `/claims`, `/hypotheses`.<br>3. Trigger `POST /api/demo/reset` again.<br>4. Dump JSON again and run `diff -u`.<br>5. Assert 0 diff lines (bit-for-bit identical). | PENDING | 2026-10-15 | @DANTE-1903 |
@@ -111,7 +111,7 @@ fi
 ## 4. Protocol: Repeat-Run Determinism (Check 10)
 
 ### Objective
-Prove that the Ghost Protocol evidence engine is 100% deterministic, producing identical normalization, conflict detection, and claim synthesis across repeated executions without state leakage or non-deterministic ordering.
+Show that the Ghost Protocol evidence engine is deterministic for the same inputs, producing identical normalization, conflict detection, and claim synthesis across repeated executions without state leakage or non-deterministic ordering.
 
 ### Test Script
 Save as `verify_determinism.py` and run against the live API:
