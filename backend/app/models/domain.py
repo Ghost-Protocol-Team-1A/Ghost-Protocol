@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 
 class ClaimState(StrEnum):
@@ -174,6 +174,21 @@ class OriginalRecord(BaseModel):
     sha256: str | None
     columns: list[str]
     rows: list[dict[str, str]]
+
+
+class CaseCreate(BaseModel):
+    """Input for a new, empty investigation."""
+
+    title: str = Field(min_length=3, max_length=120)
+    description: str = Field(default="", max_length=1000)
+    incident_start: AwareDatetime
+    incident_end: AwareDatetime
+
+    @model_validator(mode="after")
+    def _window_in_order(self) -> CaseCreate:
+        if self.incident_end <= self.incident_start:
+            raise ValueError("incident_end must be after incident_start")
+        return self
 
 
 class StagedItem(BaseModel):
