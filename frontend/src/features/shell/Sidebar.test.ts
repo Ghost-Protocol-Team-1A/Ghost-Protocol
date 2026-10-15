@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { isActive, NAV } from "./Sidebar";
 
 describe("sidebar", () => {
@@ -15,6 +17,10 @@ describe("sidebar", () => {
   });
 
   it("only links to pages that exist", () => {
-    expect(NAV.map((n) => n.label)).not.toContain("Graph");
+    const app = path.resolve(__dirname, "../../app/(workstation)");
+    for (const { href } of NAV) {
+      const route = href.replace(/CASE-\d{3}/, "[caseId]");
+      expect(existsSync(path.join(app, route, "page.tsx")), href).toBe(true);
+    }
   });
 });
