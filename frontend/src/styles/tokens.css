@@ -1,28 +1,35 @@
-/* Design tokens from the Figma brand board (frame 70:2) and design system (frame 48:1127).
-   Use these variables; do not add new hex colors in components. */
+/* Ghost Protocol v2 design tokens (Figma: "v2 · Black + Lime" section, brand board + design system).
+   Two brand colors: Ink and Signal Lime. Neutrals are tints of ink.
+   State colors (supported, contradicted, inferred, unresolved) appear only inside data: badges,
+   timeline marks, graph nodes and rule labels. Never use them for buttons or decoration. */
 
 :root {
-  /* Surfaces */
-  --gp-obsidian: #090c11;
-  --gp-graphite: #11161c;
-  --gp-surface: #121720;
-  --gp-surface-raised: #171f2b;
-  --gp-border: #384557;
-
-  /* Text */
-  --gp-text: #edf2fa;
-  --gp-text-muted: #9eadbf;
-  --gp-text-subtle: #7a8fa6;
-
-  /* Brand accents */
+  /* Brand */
+  --gp-ink: #0a0b0d;
   --gp-lime: #b8f54a;
-  --gp-cyan: #40d1e0;
-  --gp-teal: #2eccb0;
-  --gp-coral: #ff5c52;
-  --gp-gold: #fab54f;
-  --gp-blue: #61a3fa;
+  --gp-lime-soft: rgba(184, 245, 74, 0.12);
+  --gp-lime-ink: #2b3a12; /* text on lime */
 
-  /* Claim states — always pair the color with the text label */
+  /* Neutrals (tints of ink) */
+  --gp-obsidian: #0a0b0d;
+  --gp-graphite: #0e1013;
+  --gp-surface: #111317;
+  --gp-surface-raised: #15181c;
+  --gp-border: #22262c;
+  --gp-hairline: #16191e;
+  --gp-text: #f2f4f7;
+  --gp-text-muted: #9ba3af;
+  --gp-text-subtle: #6b7280;
+  --gp-text-soft: #c9ced6;
+
+  /* Legacy names kept so v1 modules keep working; they now resolve to the two-color system. */
+  --gp-cyan: var(--gp-text-soft);
+  --gp-teal: var(--gp-lime);
+
+  /* State colors — data only */
+  --gp-coral: #ff6b5e;
+  --gp-gold: #f5b94f;
+  --gp-blue: #7db4ff;
   --gp-state-supported: var(--gp-lime);
   --gp-state-contradicted: var(--gp-coral);
   --gp-state-inferred: var(--gp-blue);
@@ -30,11 +37,13 @@
 
   /* Type */
   --gp-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --gp-text-xs: 0.6875rem;
-  --gp-text-sm: 0.8125rem;
-  --gp-text-md: 0.9375rem;
-  --gp-text-lg: 1.25rem;
-  --gp-text-xl: 1.75rem;
+  --gp-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --gp-text-xs: 0.75rem;
+  --gp-text-sm: 0.875rem;
+  --gp-text-md: 1rem;
+  --gp-text-lg: 1.375rem;
+  --gp-text-xl: 2.5rem;
+  --gp-text-display: clamp(2.75rem, 6vw, 6rem);
 
   /* Spacing and shape */
   --gp-space-1: 4px;
@@ -43,6 +52,10 @@
   --gp-space-4: 16px;
   --gp-space-6: 24px;
   --gp-space-8: 32px;
-  --gp-radius: 8px;
-  --gp-focus: 0 0 0 2px var(--gp-obsidian), 0 0 0 4px var(--gp-cyan);
+  --gp-space-12: 48px;
+  --gp-space-16: 64px;
+  --gp-radius: 10px;
+  --gp-radius-lg: 20px;
+  --gp-radius-pill: 999px;
+  --gp-focus: 0 0 0 2px var(--gp-ink), 0 0 0 4px var(--gp-lime);
 }

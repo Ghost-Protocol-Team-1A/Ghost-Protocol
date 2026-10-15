@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], display: "swap", variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Ghost Protocol",
-  description: "Evidence intelligence for incident investigations.",
+  title: "Ghost Protocol — evidence you can inspect",
+  description:
+    "Reconstruct what happened from fragmented evidence, keep every original timestamp, and see what remains unknown.",
 };
 
 export default function RootLayout({
@@ -16,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} ${mono.variable}`}>{children}</body>
     </html>
   );
 }
