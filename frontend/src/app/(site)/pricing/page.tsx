@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import m from "@/features/site/marketing.module.css";
 import styles from "./pricing.module.css";
 
 export const metadata: Metadata = {
@@ -11,96 +12,69 @@ export const metadata: Metadata = {
 const TIERS = [
   {
     tag: "Case Pilot",
-    tagClass: styles.tagCyan,
     heading: "Contact us",
-    headingClass: styles.priceCyan,
     subtitle: "One controlled case.",
-    features: [
-      "Evidence intake and hashing",
-      "Timeline normalization",
-      "Conflict review",
-      "Report preview",
-    ],
+    features: ["Evidence intake and hashing", "Timeline normalization", "Conflict review", "Report preview"],
     ctaText: "Talk to us",
-    ctaHref: "/contact",
   },
   {
     tag: "Response Team",
-    tagClass: styles.tagLime,
     heading: "Custom",
-    headingClass: styles.priceLime,
     subtitle: "Repeatable investigations.",
-    features: [
-      "Multiple active cases",
-      "Team roles and audit trail",
-      "Hypothesis comparison",
-      "Review assignments",
-    ],
+    features: ["Multiple active cases", "Team roles and audit trail", "Hypothesis comparison", "Review assignments"],
     ctaText: "Request team demo",
-    ctaHref: "/contact",
+    featured: true,
   },
   {
     tag: "Enterprise",
-    tagClass: styles.tagGold,
     heading: "Let's scope it",
-    headingClass: styles.priceGold,
     subtitle: "Complex environments.",
-    features: [
-      "Identity integration",
-      "Advanced access policies",
-      "Deployment options",
-      "Security review and support",
-    ],
+    features: ["Identity integration", "Advanced access policies", "Deployment options", "Security review and support"],
     ctaText: "Talk to us",
-    ctaHref: "/contact",
   },
 ];
 
 export default function PricingPage() {
   return (
-    <div className={styles.page}>
-      <header className={styles.hero}>
-        <p className={styles.kicker}>
-          Plans built around review, not automated verdicts
+    <>
+      <section className={m.hero}>
+        <span className="gp-eyebrow">Pricing</span>
+        <h1 className={m.title}>Start with one case. Scale with confidence.</h1>
+        <p className={m.lead}>
+          Plans built around review, not automated verdicts. Proposed packaging for validation;
+          rates, limits and service terms are confirmed before launch.
         </p>
-        <h1 className={styles.title}>Start with one case. Scale with confidence.</h1>
-        <p className={styles.lead}>
-          Proposed packaging for validation. Confirm rates, limits, and service terms
-          before launch.
-        </p>
-        <div className={styles.hackathonNotice} role="note">
-          Illustrative tiers for the hackathon. Not a commercial offer.
-        </div>
-      </header>
-
-      <section className={styles.grid} aria-label="Investigation tiers">
-        {TIERS.map((tier) => (
-          <article key={tier.tag} className={styles.card}>
-            <div className={styles.cardHeader}>
-              <span className={tier.tagClass}>{tier.tag}</span>
-              <h2 className={tier.headingClass}>{tier.heading}</h2>
-              <p className={styles.subtitle}>{tier.subtitle}</p>
-              <ul className={styles.featureList}>
-                {tier.features.map((feature) => (
-                  <li key={feature} className={styles.featureItem}>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.cardAction}>
-              <Link href={tier.ctaHref} className={styles.actionBtn}>
-                {tier.ctaText}
-              </Link>
-            </div>
-          </article>
-        ))}
+        <span className="gp-chip" role="note">
+          Illustrative tiers for the hackathon · not a commercial offer
+        </span>
       </section>
 
-      <footer className={styles.footnote}>
-        Pricing should never incentivize unnecessary evidence collection. Confirm
-        data residency, retention, and contract terms.
-      </footer>
-    </div>
+      <section className={`${m.section} ${m.flush}`} aria-label="Investigation tiers">
+        <div className={m.grid3}>
+          {TIERS.map((tier) => (
+            <article key={tier.tag} className={`${m.card} ${styles.tier} ${tier.featured ? styles.featured : ""}`}>
+              <span className={m.label}>{tier.tag}</span>
+              <h2 className={styles.price}>{tier.heading}</h2>
+              <p>{tier.subtitle}</p>
+              <ul className={styles.features}>
+                {tier.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <Link
+                href="/contact"
+                className={`gp-btn ${tier.featured ? "gp-btn-lime" : "gp-btn-ghost"} ${styles.cta}`}
+              >
+                {tier.ctaText}
+              </Link>
+            </article>
+          ))}
+        </div>
+        <p className={m.note}>
+          Pricing should never incentivize unnecessary evidence collection. Confirm data residency,
+          retention, and contract terms.
+        </p>
+      </section>
+    </>
   );
 }

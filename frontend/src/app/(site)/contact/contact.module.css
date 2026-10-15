@@ -1,129 +1,38 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gp-space-8);
-}
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gp-space-2);
-  max-width: 760px;
-}
-
-.kicker {
-  color: var(--gp-lime);
-  font-size: var(--gp-text-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
-  margin: 0;
-}
-
-.title {
-  color: var(--gp-text);
-  font-size: var(--gp-text-xl);
-  font-weight: 600;
-  line-height: 1.25;
-  margin: 0;
-}
-
-.lead {
-  color: var(--gp-text-muted);
-  font-size: var(--gp-text-sm);
-  line-height: 1.6;
-  margin: 0;
-}
-
 .grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: var(--gp-space-6);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--gp-space-4);
   align-items: start;
 }
 
-.infoCard {
-  background: var(--gp-surface);
-  border: 1px solid var(--gp-border);
-  border-radius: var(--gp-radius);
-  padding: var(--gp-space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--gp-space-6);
-}
-
-.directList {
-  display: flex;
-  flex-direction: column;
+.info {
   gap: var(--gp-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
 }
 
-.directItem {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--gp-space-2);
-  font-size: var(--gp-text-sm);
-}
-
-.emailLabel {
-  color: var(--gp-cyan);
-  font-size: var(--gp-text-xs);
+.big {
+  font-size: 1.35rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.phoneLabel {
-  color: var(--gp-lime);
-  font-size: var(--gp-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.directLink {
   color: var(--gp-text);
   text-decoration: none;
-  font-weight: 500;
-  word-break: break-all;
+  letter-spacing: -0.01em;
 }
 
-.directLink:hover {
-  color: var(--gp-cyan);
+.big:hover {
+  color: var(--gp-lime);
 }
 
-.addressBlock {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gp-space-2);
-  border-top: 1px solid var(--gp-border);
-  padding-top: var(--gp-space-6);
-  font-size: var(--gp-text-xs);
-  line-height: 1.6;
+.address {
+  margin-top: var(--gp-space-4);
+  padding-top: var(--gp-space-4);
+  border-top: 1px solid var(--gp-hairline);
 }
 
-.companyName {
-  color: var(--gp-text);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.address p {
+  margin: var(--gp-space-2) 0 0;
 }
 
-.addressText {
-  color: var(--gp-text-muted);
-  margin: 0;
-}
-
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .infoCard {
-    padding: var(--gp-space-4);
+    grid-template-columns: minmax(0, 1fr);
   }
 }

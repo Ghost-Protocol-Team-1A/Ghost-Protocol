@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import m from "@/features/site/marketing.module.css";
 import { ContactForm } from "@/features/site/contact-form";
 import styles from "./contact.module.css";
 
@@ -10,44 +11,35 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className={styles.page}>
-      <header className={styles.hero}>
-        <p className={styles.kicker}>Contact / Partnerships / Demos</p>
-        <h1 className={styles.title}>Let’s make the evidence trail clear.</h1>
-        <p className={styles.lead}>
-          Tell us about your workflow or integration needs. Do not send sensitive
-          case evidence through this form.
+    <>
+      <section className={m.hero}>
+        <span className="gp-eyebrow">Contact · Partnerships · Demos</span>
+        <h1 className={m.title}>Let’s make the evidence trail clear.</h1>
+        <p className={m.lead}>
+          Tell us about your workflow or integration needs. Do not send sensitive case evidence
+          through this form.
         </p>
-      </header>
+      </section>
 
-      <div className={styles.grid}>
-        <ContactForm />
+      <section className={`${m.section} ${m.flush}`} aria-label="Get in touch">
+        <div className={styles.grid}>
+          <ContactForm />
 
-        <aside className={styles.infoCard} aria-label="Direct contact details">
-          <ul className={styles.directList}>
-            <li className={styles.directItem}>
-              <span className={styles.emailLabel}>Email /</span>
-              <a href="mailto:info@rayvme.com" className={styles.directLink}>
-                info@rayvme.com
-              </a>
-            </li>
-            <li className={styles.directItem}>
-              <span className={styles.phoneLabel}>Phone /</span>
-              <a href="tel:+2348154612625" className={styles.directLink}>
-                +234 815 461 2625
-              </a>
-            </li>
-          </ul>
-
-          <div className={styles.addressBlock}>
-            <span className={styles.companyName}>Rayvmedia Plus Ltd</span>
-            <p className={styles.addressText}>
-              2–4 Oladimeji Street, Orisha, Magodo GRA Phase 1, Isheri, Lagos,
-              Nigeria
-            </p>
-          </div>
-        </aside>
-      </div>
-    </div>
+          <aside className={`${m.card} ${styles.info}`} aria-label="Direct contact details">
+            <span className={m.label}>Direct</span>
+            <a href="mailto:info@rayvme.com" className={styles.big}>
+              info@rayvme.com
+            </a>
+            <a href="tel:+2348154612625" className={styles.big}>
+              +234 815 461 2625
+            </a>
+            <div className={styles.address}>
+              <span className={m.label}>Rayvmedia Plus Ltd</span>
+              <p>2–4 Oladimeji Street, Orisha, Magodo GRA Phase 1, Isheri, Lagos, Nigeria</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </>
   );
 }
