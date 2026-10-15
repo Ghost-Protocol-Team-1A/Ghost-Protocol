@@ -45,6 +45,28 @@ class CaseData:
         self.conflicts: list[Conflict] = []
         self._analyze(seed.events)
 
+    @classmethod
+    def blank(cls, case: Case, created_at: str) -> CaseData:
+        """An empty case created by an investigator; evidence is added later."""
+        data = cls.__new__(cls)
+        data.seed_name = ""
+        data.case = case
+        data.evidence, data.claims, data.hypotheses = [], [], []
+        data.files, data.authoritative_for, data.changes = {}, {}, []
+        data.events, data.conflicts = [], []
+        data.audit = [
+            AuditEvent(
+                id="A-001",
+                case_id=case.id,
+                at=created_at,
+                actor="BJ",
+                action="Case created",
+                entity_ref=case.id,
+                details=case.title,
+            )
+        ]
+        return data
+
     def _analyze(self, events: list[Event]) -> None:
         """Run every rule over the current evidence. Deterministic for the same inputs."""
         findings = [
@@ -67,6 +89,8 @@ class CaseData:
     def staged(self) -> list[StagedItem]:
         present = {e.id for e in self.evidence}
         items = []
+        if not self.seed_name:
+            return items
         for evidence_id in staged_ids(self.seed_name):
             if evidence_id in present:
                 continue
@@ -161,6 +185,21 @@ class Store:
         for name in SEEDS:
             data = CaseData(name)
             self.cases[data.case.id] = data
+
+    def create_case(self, title: str, description: str, start: str, end: str) -> CaseData:
+        number = max(int(cid.split("-")[1]) for cid in self.cases) + 1 if self.cases else 1
+        case = Case(
+            id=f"CASE-{number:03d}",
+            title=title,
+            description=description,
+            incident_start=start,
+            incident_end=end,
+            status="open",
+            fictional=False,
+        )
+        data = CaseData.blank(case, self.now())
+        self.cases[case.id] = data
+        return data
 
     @staticmethod
     def now() -> str:
