@@ -102,3 +102,36 @@
   word-break: break-all;
   font-variant-numeric: tabular-nums;
 }
+
+.formats {
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+  text-align: left;
+}
+
+.formats summary {
+  cursor: pointer;
+  text-align: center;
+  color: var(--gp-lime);
+}
+
+.formats dl {
+  display: grid;
+  gap: var(--gp-space-2);
+  margin: var(--gp-space-3) 0 0;
+}
+
+.formats dl > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--gp-space-3);
+}
+
+.formats dt {
+  color: var(--gp-text);
+}
+
+.formats dd {
+  margin: 0;
+  font-family: var(--gp-mono);
+}

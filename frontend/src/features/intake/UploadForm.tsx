@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useRef } from "react";
 import { uploadEvidence, type UploadState } from "@/app/(workstation)/cases/[caseId]/intake/actions";
-import { ACCEPTED_EXTENSIONS, MAX_UPLOAD_MB } from "@/lib/intake";
+import { ACCEPT_ATTRIBUTE, ACCEPTED_GROUPS, MAX_UPLOAD_MB } from "@/lib/intake";
 import styles from "./intake.module.css";
 
 export function UploadForm({ caseId }: { caseId: string }) {
@@ -21,15 +21,24 @@ export function UploadForm({ caseId }: { caseId: string }) {
         <label htmlFor="evidence-file" className={styles.dropTitle}>
           Add evidence to {caseId}
         </label>
-        <p className={styles.types}>
-          {ACCEPTED_EXTENSIONS.join(" · ").toUpperCase()} · up to {MAX_UPLOAD_MB} MB
-        </p>
+        <p className={styles.types}>Video · audio · images · documents · logs, up to {MAX_UPLOAD_MB} MB</p>
+        <details className={styles.formats}>
+          <summary>Accepted formats</summary>
+          <dl>
+            {Object.entries(ACCEPTED_GROUPS).map(([group, exts]) => (
+              <div key={group}>
+                <dt>{group}</dt>
+                <dd>{exts.join(" · ").toUpperCase()}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
         <input
           id="evidence-file"
           name="file"
           type="file"
           required
-          accept={ACCEPTED_EXTENSIONS.map((e) => `.${e}`).join(",")}
+          accept={ACCEPT_ATTRIBUTE}
           className={styles.file}
           aria-describedby={state.error ? "upload-error" : undefined}
         />
