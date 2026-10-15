@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StateBadge } from "@/components/StateBadge";
+import { ReviewForm, ReviewHistory } from "@/features/review/ReviewForm";
 import panel from "@/components/panel.module.css";
 import { api, ApiError, localTime } from "@/lib/api";
 import { conflictTitle, selectConflict, SEVERITY_LABELS } from "@/lib/labels";
@@ -138,9 +139,18 @@ export default async function ConflictsPage({
                 <dt>Status</dt>
                 <dd>
                   {selected.status.replace("_", " ")}
-                  {selected.requires_human_review && " · requires human review"}
+                  {selected.requires_human_review &&
+                    (selected.status === "open" || selected.status === "under_review") &&
+                    " · requires human review"}
                 </dd>
               </dl>
+              <ReviewHistory reviews={selected.reviews} />
+              <ReviewForm
+                key={selected.id}
+                caseId={caseId}
+                targetId={selected.id}
+                currentStatus={selected.status}
+              />
             </article>
 
             <section className={panel.panel} aria-labelledby="alternatives-heading">
