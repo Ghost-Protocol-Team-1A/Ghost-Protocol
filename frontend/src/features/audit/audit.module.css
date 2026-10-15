@@ -1,0 +1,159 @@
+.muted {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--gp-space-4);
+  margin-bottom: var(--gp-space-4);
+}
+
+.filters label {
+  display: grid;
+  gap: var(--gp-space-1);
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+}
+
+.filters select {
+  font: inherit;
+  font-size: var(--gp-text-sm);
+  color: var(--gp-cyan);
+  background: var(--gp-obsidian);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-radius);
+  padding: var(--gp-space-2) var(--gp-space-3);
+  color-scheme: dark;
+}
+
+.summary {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-xs);
+  margin: 0 0 var(--gp-space-2);
+  padding-bottom: var(--gp-space-2);
+}
+
+.clear {
+  font: inherit;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-cyan);
+  background: none;
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-radius);
+  padding: var(--gp-space-1) var(--gp-space-3);
+  margin-bottom: var(--gp-space-2);
+  cursor: pointer;
+}
+
+.clear:hover {
+  border-color: var(--gp-cyan);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--gp-border);
+  border-radius: 4px;
+  background: var(--gp-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--gp-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.caption {
+  text-align: left;
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-xs);
+  padding: var(--gp-space-2) var(--gp-space-3);
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  font-weight: 400;
+  color: var(--gp-cyan);
+  background: var(--gp-surface-raised);
+  padding: var(--gp-space-2) var(--gp-space-3);
+}
+
+.table td {
+  padding: var(--gp-space-2) var(--gp-space-3);
+  border-top: 1px solid var(--gp-border);
+  vertical-align: top;
+}
+
+.actor {
+  color: var(--gp-teal);
+}
+
+.kind {
+  display: inline-block;
+  font-size: var(--gp-text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gp-text-muted);
+  border: 1px solid var(--gp-border);
+  border-radius: 4px;
+  padding: 2px var(--gp-space-2);
+  margin-right: var(--gp-space-2);
+  white-space: nowrap;
+}
+
+.entity {
+  color: var(--gp-blue);
+}
+
+.entityPlain {
+  color: var(--gp-text);
+}
+
+.details {
+  color: var(--gp-text-muted);
+}
+
+.empty {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+  margin: 0;
+  padding: var(--gp-space-4);
+  border: 1px dashed var(--gp-border);
+  border-radius: var(--gp-radius);
+  background: var(--gp-surface);
+}
+
+/* Below 700 px the rows stack into cards: label in front of each value. */
+@media (max-width: 700px) {
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: grid;
+    gap: var(--gp-space-1);
+    padding: var(--gp-space-3);
+    border-top: 1px solid var(--gp-border);
+  }
+
+  .table td {
+    display: flex;
+    gap: var(--gp-space-3);
+    border: none;
+    padding: 0;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    flex: 0 0 72px;
+    color: var(--gp-text-muted);
+    font-size: var(--gp-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
