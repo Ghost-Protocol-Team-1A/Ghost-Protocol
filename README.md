@@ -282,6 +282,7 @@ comes from environment variables; copy `.env.example` to `.env` and never commit
 | Document | What it covers |
 | --- | --- |
 | [docs/demo-scenario.md](docs/demo-scenario.md) | The fictional case, expected answers and acceptance checklist |
+| [docs/pitch-guide.md](docs/pitch-guide.md) | The judges' pitch: what's new in v2, roles, five-minute run, Q&A |
 | [docs/demo-script.md](docs/demo-script.md) | Three-minute demo, second by second, with fallbacks |
 | [docs/architecture.md](docs/architecture.md) | How it is built: pipeline, rules, API, storage, decisions |
 | [docs/security.md](docs/security.md) | Security controls, gaps and what a real deployment needs |
