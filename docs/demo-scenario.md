@@ -55,7 +55,7 @@ rule that produced it.
 | ID   | Rule          | Type                 | Severity | Evidence           | Explanation |
 | ---- | ------------- | -------------------- | -------- | ------------------ | ----------- |
 | C-01 | RULE-DUP-001  | Copied log record    | High     | E-04 r18, E-05 r7  | E-05 row 7 matches E-04 row 18 on badge, door and event code but is stamped 21:09:00, before the first person enters at 21:10:00. Possible copy or import error. **Not proof of tampering.** |
-| C-02 | RULE-TIME-001 | Clock offset         | Medium   | E-02 (vs E-01, E-04) | E-02 clock runs 120 s fast. Source 21:16:00 normalizes to 21:14:00. In the demo the offset is declared in the fixture metadata; the UI must say so. |
+| C-02 | RULE-TIME-002 | Clock offset         | Medium   | E-02 (vs E-04, E-03) | E-02 clock runs 120 s fast, inferred from two anchors: EV-013 (door on camera, 21:14:00) vs EV-012 (E-04, 21:12:00) and EV-017 (beacon on camera, 21:18:00) vs EV-016 (E-03, 21:16:00). Source 21:16:00 normalizes to 21:14:00. |
 | C-03 | RULE-CLAIM-001| Identity not established | Review | — (claim CL-04)    | The person in E-01 cannot be linked to badge B-117 from the available evidence. |
 
 ## Claims
@@ -98,7 +98,7 @@ evidence updates the case **and the system says honestly what did not change.**
 - [ ] Exactly six evidence items after `reset`.
 - [ ] EV-014 keeps source time 21:16:00 and shows normalized time 21:14:00.
 - [ ] C-01 is detected by RULE-DUP-001 and links E-04 row 18 and E-05 row 7.
-- [ ] C-02 is detected by RULE-TIME-001 and names E-02.
+- [ ] C-02 is detected by RULE-TIME-002, names E-02 and lists both anchor pairs.
 - [ ] No event is labeled with a person's identity.
 - [ ] Every claim except Unresolved ones cites at least one evidence item.
 - [ ] Reset returns the case to this exact state; running the engine twice gives identical output.

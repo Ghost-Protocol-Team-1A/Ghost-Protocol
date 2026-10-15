@@ -53,7 +53,7 @@ Build the investigation report as a downloadable file, in Markdown and JSON.
 - `generated_at` in UTC ISO-8601.
 
 **Acceptance criteria**
-- [ ] For CASE-001 the report lists all six evidence items, EV-014 shows `21:16:00 → 21:14:00`, and C-01/C-02 appear with `RULE-DUP-001`/`RULE-TIME-001`.
+- [ ] For CASE-001 the report lists all six evidence items, EV-014 shows `21:16:00 → 21:14:00`, and C-01/C-02 appear with `RULE-DUP-001`/`RULE-TIME-002`.
 - [ ] No claim is dropped. Contradicted and Unresolved claims appear, not only Supported ones.
 - [ ] Two calls give identical output apart from `generated_at`.
 - [ ] Unknown case → `404`; unsupported format → `422`; both use the shared error shape.

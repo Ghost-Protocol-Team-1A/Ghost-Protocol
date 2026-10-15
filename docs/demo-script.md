@@ -64,8 +64,8 @@ curl -s http://localhost:8000/api/cases/CASE-001/staged | jq .[0].evidence_id # 
 
 | Time | Presenter Spoken Script | Screen Action & UI State | Fallback Line (If Issue Occurs) |
 | :--- | :--- | :--- | :--- |
-| **1:10 – 1:22** | "Why was that clock adjusted, and how sure are we? Let's open the Conflict Inspector. Ghost Protocol runs deterministic rules—no black-box AI hallucinations. Here is `C-02`, triggered by rule `RULE-TIME-001`." | Click **Conflicts** in the sidebar navigation (`/cases/CASE-001/conflicts`). Click on conflict **C-02** in the left panel list. | *If conflict item does not focus:* Navigate directly to `/cases/CASE-001/conflicts?c=C-02`. |
-| **1:22 – 1:35** | "The loading-bay camera `E-02` runs 120 seconds fast against the reference clock that `E-01` and `E-04` share. Notice the system's honesty: under 'What remains uncertain' it says this offset is declared in the demo data, not inferred from the evidence." | Presenter highlights the explanation card for `C-02`, pointing out `RULE-TIME-001`, the source record `E-02 · timecode 00:39` (21:16:00 → 21:14:00) and the 'What remains uncertain' line. | *If conflict details are slow to expand:* "The conflict card shows the record it adjusted: E-02 at source 21:16:00, normalized to 21:14:00, against the shared reference clock." |
+| **1:10 – 1:22** | "Why was that clock adjusted, and how sure are we? Let's open the Conflict Inspector. Ghost Protocol runs deterministic rules—no black-box AI hallucinations. Here is `C-02`, triggered by rule `RULE-TIME-002`." | Click **Conflicts** in the sidebar navigation (`/cases/CASE-001/conflicts`). Click on conflict **C-02** in the left panel list. | *If conflict item does not focus:* Navigate directly to `/cases/CASE-001/conflicts?c=C-02`. |
+| **1:22 – 1:35** | "Nobody told the system this camera was wrong. It found two moments the camera shares with trusted clocks: the bay door opening, also in the access log, and the alarm, also in the alarm audio. Both say the camera runs 120 seconds fast. Under 'What remains uncertain' it says what that inference cannot prove." | Presenter highlights the explanation card for `C-02`, pointing out `RULE-TIME-002`, the two anchor pairs, the source record `E-02 · timecode 00:39` (21:16:00 → 21:14:00) and the 'What remains uncertain' line. | *If conflict details are slow to expand:* "The conflict card shows the record it adjusted: E-02 at source 21:16:00, normalized to 21:14:00, against the shared reference clock." |
 
 ---
 
@@ -132,9 +132,9 @@ curl -s http://localhost:8000/api/cases/CASE-001/staged | jq .[0].evidence_id # 
               [Click: /dashboard]
 [0:20 - 0:45] CASE-001: Asset EQ-4471, 21:00-22:00 window, 6 evidence items, SHA-256 hashes.
               [Click: /cases/CASE-001/timeline]
-[0:45 - 1:10] DUAL TIME: EV-014 shows source 21:16:00 vs. normalized 21:14:00 (declared -120s offset).
+[0:45 - 1:10] DUAL TIME: EV-014 shows source 21:16:00 vs. normalized 21:14:00 (-120 s offset inferred from two anchors).
               EV-018 witness estimate ~21:18. Never overwrite source time!
-[1:10 - 1:35] C-02 OFFSET: RULE-TIME-001, E-02 camera runs 120s fast. Metadata declared.
+[1:10 - 1:35] C-02 OFFSET: RULE-TIME-002, E-02 camera runs 120s fast. Inferred from 2 anchors.
               [Click: /cases/CASE-001/conflicts?c=C-02]
 [1:35 - 1:55] C-01 COPIED LOG: RULE-DUP-001, E-05 r7 copied from E-04 r18 at 21:09.
               Before entry at 21:10. Review prompt, NOT proof of tampering!
