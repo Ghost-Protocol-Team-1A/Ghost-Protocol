@@ -10,15 +10,81 @@ from app.errors import ApiError
 from app.models.domain import EvidenceType
 
 ALLOWED_EXTENSIONS: dict[str, EvidenceType] = {
+    # Video
     "mp4": EvidenceType.VIDEO,
+    "m4v": EvidenceType.VIDEO,
+    "mov": EvidenceType.VIDEO,
+    "3gp": EvidenceType.VIDEO,
+    "webm": EvidenceType.VIDEO,
+    "mkv": EvidenceType.VIDEO,
+    "avi": EvidenceType.VIDEO,
+    # Audio: phone recorders and messaging apps mostly produce m4a, aac, ogg/opus or amr.
     "wav": EvidenceType.AUDIO,
     "mp3": EvidenceType.AUDIO,
+    "m4a": EvidenceType.AUDIO,
+    "aac": EvidenceType.AUDIO,
+    "ogg": EvidenceType.AUDIO,
+    "oga": EvidenceType.AUDIO,
+    "opus": EvidenceType.AUDIO,
+    "flac": EvidenceType.AUDIO,
+    "aif": EvidenceType.AUDIO,
+    "aiff": EvidenceType.AUDIO,
+    "amr": EvidenceType.AUDIO,
+    # Logs and data
     "csv": EvidenceType.CSV,
     "json": EvidenceType.JSON,
-    "pdf": EvidenceType.PDF,
     "txt": EvidenceType.TEXT,
+    "log": EvidenceType.TEXT,
+    "md": EvidenceType.TEXT,
+    # Documents
+    "pdf": EvidenceType.PDF,
+    "docx": EvidenceType.DOCUMENT,
+    "xlsx": EvidenceType.DOCUMENT,
+    # Images
     "png": EvidenceType.IMAGE,
     "jpg": EvidenceType.IMAGE,
+    "jpeg": EvidenceType.IMAGE,
+    "gif": EvidenceType.IMAGE,
+    "webp": EvidenceType.IMAGE,
+    "heic": EvidenceType.IMAGE,
+    "heif": EvidenceType.IMAGE,
+}
+
+# Served with the original bytes so browsers can play or show them. Anything else downloads.
+MEDIA_TYPES: dict[str, str] = {
+    "mp4": "video/mp4",
+    "m4v": "video/mp4",
+    "mov": "video/quicktime",
+    "3gp": "video/3gpp",
+    "webm": "video/webm",
+    "mkv": "video/x-matroska",
+    "avi": "video/x-msvideo",
+    "wav": "audio/wav",
+    "mp3": "audio/mpeg",
+    "m4a": "audio/mp4",
+    "aac": "audio/aac",
+    "ogg": "audio/ogg",
+    "oga": "audio/ogg",
+    "opus": "audio/ogg",
+    "flac": "audio/flac",
+    "aif": "audio/aiff",
+    "aiff": "audio/aiff",
+    "amr": "audio/amr",
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "gif": "image/gif",
+    "webp": "image/webp",
+    "heic": "image/heic",
+    "heif": "image/heif",
+    "pdf": "application/pdf",
+    "csv": "text/csv; charset=utf-8",
+    "json": "application/json",
+    "txt": "text/plain; charset=utf-8",
+    "log": "text/plain; charset=utf-8",
+    "md": "text/plain; charset=utf-8",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 }
 
 DEFAULT_MAX_UPLOAD_MB = 50
@@ -35,6 +101,12 @@ _MAGICS: tuple[tuple[bytes, str], ...] = (
     (b"ID3", "mp3"),
     (b"\x00\x00\x00\x18ftyp", "mp4"),
     (b"ftyp", "mp4"),
+    (b"OggS", "ogg"),
+    (b"fLaC", "flac"),
+    (b"FORM", "aiff"),
+    (b"#!AMR", "amr"),
+    (b"\x1aE\xdf\xa3", "webm/mkv"),
+    (b"GIF8", "gif"),
     (b"PK\x03\x04", "zip (docx/xlsx)"),
     (b"MZ", "windows executable"),
     (b"\x7fELF", "elf executable"),
@@ -51,6 +123,35 @@ def _starts_with(*prefixes: bytes) -> Callable[[bytes], bool]:
 def _is_mp4(head: bytes) -> bool:
     """ISO Base Media boxes are size(4) + 'ftyp'; the marker is at offset 4."""
     return head[4:8] == b"ftyp"
+
+
+# QuickTime files may open with a moov, mdat, wide, free or skip atom instead of ftyp.
+_ISO_BOXES = (b"ftyp", b"moov", b"mdat", b"wide", b"free", b"skip", b"pnot")
+
+
+def _is_iso_media(head: bytes) -> bool:
+    """MP4, M4A, MOV, 3GP and HEIC all share the ISO base media layout: size(4) + box type."""
+    return head[4:8] in _ISO_BOXES
+
+
+def _is_riff(kind: bytes) -> Callable[[bytes], bool]:
+    return lambda head: head.startswith(b"RIFF") and head[8:12] == kind
+
+
+def _is_aiff(head: bytes) -> bool:
+    return head.startswith(b"FORM") and head[8:12] in (b"AIFF", b"AIFC")
+
+
+def _is_aac(head: bytes) -> bool:
+    """ADTS frame sync (0xFFF), or an ID3 tag in front of it."""
+    if head.startswith(b"ID3"):
+        return True
+    return len(head) >= 2 and head[0] == 0xFF and head[1] & 0xF6 == 0xF0
+
+
+def _is_zip_office(head: bytes) -> bool:
+    """docx and xlsx are zip archives; the type is checked by name and the zip signature."""
+    return head.startswith(b"PK\x03\x04")
 
 
 def _is_wav(head: bytes) -> bool:
@@ -82,16 +183,44 @@ def _is_text(head: bytes) -> bool:
     return True
 
 
+_SIGNATURES: dict[str, Callable[[bytes], bool]] = {
+    "mp4": _is_iso_media,
+    "m4v": _is_iso_media,
+    "mov": _is_iso_media,
+    "3gp": _is_iso_media,
+    "m4a": _is_iso_media,
+    "heic": _is_iso_media,
+    "heif": _is_iso_media,
+    "webm": _starts_with(b"\x1aE\xdf\xa3"),
+    "mkv": _starts_with(b"\x1aE\xdf\xa3"),
+    "avi": _is_riff(b"AVI "),
+    "wav": _is_wav,
+    "mp3": _is_mp3,
+    "aac": _is_aac,
+    "ogg": _starts_with(b"OggS"),
+    "oga": _starts_with(b"OggS"),
+    "opus": _starts_with(b"OggS"),
+    "flac": _starts_with(b"fLaC", b"ID3"),
+    "aif": _is_aiff,
+    "aiff": _is_aiff,
+    "amr": _starts_with(b"#!AMR"),
+    "png": _starts_with(b"\x89PNG\r\n\x1a\n"),
+    "jpg": _starts_with(b"\xff\xd8\xff"),
+    "jpeg": _starts_with(b"\xff\xd8\xff"),
+    "gif": _starts_with(b"GIF87a", b"GIF89a"),
+    "webp": _is_riff(b"WEBP"),
+    "pdf": _starts_with(b"%PDF-"),
+    "docx": _is_zip_office,
+    "xlsx": _is_zip_office,
+    "json": _is_json,
+    "csv": _is_text,
+    "txt": _is_text,
+    "log": _is_text,
+    "md": _is_text,
+}
+
 _CHECKERS: dict[str, tuple[Callable[[bytes], bool], EvidenceType]] = {
-    "mp4": (_is_mp4, EvidenceType.VIDEO),
-    "wav": (_is_wav, EvidenceType.AUDIO),
-    "mp3": (_is_mp3, EvidenceType.AUDIO),
-    "png": (_starts_with(b"\x89PNG\r\n\x1a\n"), EvidenceType.IMAGE),
-    "jpg": (_starts_with(b"\xff\xd8\xff"), EvidenceType.IMAGE),
-    "pdf": (_starts_with(b"%PDF-"), EvidenceType.PDF),
-    "json": (_is_json, EvidenceType.JSON),
-    "csv": (_is_text, EvidenceType.CSV),
-    "txt": (_is_text, EvidenceType.TEXT),
+    ext: (_SIGNATURES[ext], kind) for ext, kind in ALLOWED_EXTENSIONS.items()
 }
 
 

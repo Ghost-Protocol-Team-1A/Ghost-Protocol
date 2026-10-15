@@ -26,6 +26,7 @@ class EvidenceType(StrEnum):
     PDF = "pdf"
     TEXT = "text"
     IMAGE = "image"
+    DOCUMENT = "document"
 
 
 class ExtractionMethod(StrEnum):
