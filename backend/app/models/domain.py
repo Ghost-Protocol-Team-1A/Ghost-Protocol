@@ -31,6 +31,10 @@ class EvidenceType(StrEnum):
 
 class ExtractionMethod(StrEnum):
     CSV_PARSER = "deterministic_csv_parser"
+    LOG_PARSER = "deterministic_log_parser"
+    MANUAL = "manual_observation"
+    AI_ACCEPTED = "ai_suggested_human_accepted"
+    NONE = "not_extracted"
     SIMULATED = "simulated_from_seed_metadata"
 
 
@@ -107,6 +111,10 @@ class EvidenceItem(BaseModel):
     extraction_method: ExtractionMethod
     clock: ClockAssumption
     simulated: bool = Field(description="True when events come from seed metadata, not parsing")
+    recorded_at: str | None = Field(
+        default=None, description="Start time stored in the media file itself; not verified"
+    )
+    extraction_note: str = Field(default="", description="What extraction did, in one line")
 
 
 class Event(BaseModel):
@@ -123,6 +131,9 @@ class Event(BaseModel):
     uncertainty_seconds: int = 0
     state: ClaimState
     record: dict[str, str] = Field(default_factory=dict, description="Parsed fields for log rows")
+    extracted_by: str | None = Field(
+        default=None, description="Who added it: a person's name for observations and accepted AI"
+    )
 
 
 class ReviewNote(BaseModel):
@@ -252,3 +263,25 @@ class CaseSummary(BaseModel):
     evidence_count: int
     event_count: int
     open_conflicts: int
+
+
+class ObservationCreate(BaseModel):
+    """Something an investigator saw or heard at a point in a recording."""
+
+    timecode: str = Field(pattern=r"^\d{1,2}:\d{2}(:\d{2})?$")
+    description: str = Field(min_length=3, max_length=300)
+    source_time: AwareDatetime | None = Field(
+        default=None, description="Needed when the file holds no start time"
+    )
+    interpretation: bool = Field(default=False, description="True when it is a reading, not a fact")
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class ClockUpdate(BaseModel):
+    """How a source's clock relates to the reference clock, set by an investigator."""
+
+    method: str = Field(pattern="^(reference_clock|declared|anchors)$")
+    offset_seconds: int = Field(default=0, ge=-86_400, le=86_400)
+    anchors: dict[str, str] = Field(default_factory=dict, max_length=20)
+    note: str = Field(default="", max_length=300)
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
