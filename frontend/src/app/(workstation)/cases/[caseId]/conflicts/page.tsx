@@ -40,7 +40,7 @@ export default async function ConflictsPage({
 
   return (
     <section>
-      <h1 className={`${panel.pageTitle} ${styles.coral}`}>Conflict inspector</h1>
+      <h1 className={panel.pageTitle}>Conflict inspector</h1>
       <p className={panel.pageLead}>
         Review contradictions through explicit rules, source records, alternative explanations,
         and human decisions.
@@ -48,7 +48,7 @@ export default async function ConflictsPage({
 
       <div className={styles.layout}>
         <nav className={panel.panel} aria-label="Open conflicts">
-          <h2 className={`${panel.panelTitle} ${styles.coral}`}>Open conflicts</h2>
+          <h2 className={panel.panelTitle}>Open conflicts</h2>
           <p className={panel.panelCaption}>Review prompts, not accusations.</p>
           {conflicts.length === 0 ? (
             <p className={styles.muted}>No conflicts detected for this case.</p>

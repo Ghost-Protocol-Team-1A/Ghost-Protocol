@@ -55,7 +55,7 @@
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--gp-cyan);
+  border-color: var(--gp-lime);
   box-shadow: var(--gp-focus);
 }
 
@@ -137,7 +137,7 @@
 }
 
 .resetBtn:hover {
-  border-color: var(--gp-cyan);
+  border-color: var(--gp-lime);
   color: var(--gp-cyan);
 }
 

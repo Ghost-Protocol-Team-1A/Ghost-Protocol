@@ -49,7 +49,7 @@
 }
 
 .clear:hover {
-  border-color: var(--gp-cyan);
+  border-color: var(--gp-lime);
 }
 
 .tableWrap {
