@@ -160,7 +160,7 @@ def test_a_valid_csv_upload_is_stored_provably(tmp_path, client):
     assert body["type"] == "csv"
     assert body["original_filename"] == "shift-log.csv"
     assert body["size_bytes"] == len(CSV_BYTES)
-    assert body["processing_status"] == "queued"
+    assert body["processing_status"] == "extracted"  # logs are parsed on upload
 
     # The hash in the API response matches shasum -a 256 of the file (acceptance for issue #3).
     assert body["sha256"] == hashlib.sha256(CSV_BYTES).hexdigest()
@@ -181,7 +181,8 @@ def test_a_valid_csv_upload_is_stored_provably(tmp_path, client):
     ids = [e["id"] for e in client.get("/api/cases/CASE-001/evidence").json()]
     assert body["id"] in ids  # E-07 is staged, so the first upload is E-08
     assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 7
-    assert client.get("/api/cases/CASE-001/audit").json()[0]["action"] == "Evidence uploaded"
+    audit = client.get("/api/cases/CASE-001/audit").json()
+    assert [a["action"] for a in audit[:2]] == ["Events extracted", "Evidence uploaded"]
 
     # Its original rows are readable in the evidence viewer, like a seeded CSV.
     original = client.get(f"/api/cases/CASE-001/evidence/{body['id']}/original").json()
@@ -291,7 +292,9 @@ def test_a_phone_recording_uploads_and_plays_back_byte_for_byte(client):
     assert res.status_code == 201
     item = res.json()
     assert item["type"] == "audio"
-    assert item["simulated"] is True  # stored and hashed; extraction is not claimed
+    assert item["simulated"] is False
+    assert item["processing_status"] == "queued"  # stored and hashed; waits for observations
+    assert item["clock"]["method"] == "not_set"
 
     played = client.get(f"/api/cases/CASE-001/evidence/{item['id']}/file")
     assert played.status_code == 200

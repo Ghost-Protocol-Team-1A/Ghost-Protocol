@@ -5,9 +5,10 @@ the allow-list, hashed in chunks, and stored under their digest. This route then
 result into the case store, where the item appears in the inventory, the report and the audit
 trail.
 
-Extraction of uploaded files is out of scope here: an upload is stored, listed and provable,
-and stays in ``queued`` status until an extraction step claims it. Duplicate bytes return the
-item that already holds them instead of creating a second one.
+Logs (CSV, JSON, text) are parsed straight away into events and the rules re-run, so the
+upload's effect shows in the change summary. Audio and video keep the start time their file
+records, and wait for an investigator's observations or accepted AI suggestions. Duplicate
+bytes return the item that already holds them instead of creating a second one.
 """
 
 from __future__ import annotations
@@ -22,13 +23,18 @@ from fastapi.responses import FileResponse
 from app.api.routes.cases import get_case
 from app.errors import ApiError, not_found
 from app.models.domain import (
+    ChangeSummary,
+    ClaimState,
     ClockAssumption,
+    Event,
     EvidenceItem,
     EvidenceType,
     ExtractionMethod,
     ProcessingStatus,
 )
-from app.services.store import CaseData, store
+from app.services.extract import media_start_time, parse_log
+from app.services.normalize import normalize
+from app.services.store import CaseData, clock_suffix, store
 from app.storage.hashing import CHUNK_SIZE, sha256_stream, stored_path
 from app.storage.validation import (
     MEDIA_TYPES,
@@ -44,15 +50,19 @@ router = APIRouter(prefix="/api", tags=["evidence"])
 # memory for every upload.
 DETECTION_HEAD_BYTES = 64 * 1024
 
-# Types this demo parses deterministically. The rest are extracted by simulated methods (see
-# the report's methods and limitations), so their labels say so.
+# Types parsed deterministically on upload. The rest need a person (observations) or accepted
+# AI suggestions before they produce events.
 _DETERMINISTIC = {EvidenceType.CSV, EvidenceType.JSON, EvidenceType.TEXT}
+_TIMED_MEDIA = {EvidenceType.VIDEO, EvidenceType.AUDIO}
+# The 'moov' box with the recording's start time can sit at either end of the file.
+_MEDIA_TAIL_BYTES = 4 * 1024 * 1024
 
 
 class EvidenceUpload(EvidenceItem):
     """An uploaded evidence item. ``duplicate`` is true when these bytes were already stored."""
 
     duplicate: bool = False
+    change: ChangeSummary | None = None
 
 
 def _detection_head(head: bytes) -> bytes:
@@ -140,21 +150,79 @@ def upload_evidence(case_id: str, file: UploadFile, response: Response) -> Evide
         size_bytes=size,
         ingested_at=store.now(),
         processing_status=ProcessingStatus.QUEUED,
-        extraction_method=(
-            ExtractionMethod.CSV_PARSER
-            if evidence_type in _DETERMINISTIC
-            else ExtractionMethod.SIMULATED
-        ),
+        extraction_method=ExtractionMethod.NONE,
         clock=ClockAssumption(),
-        simulated=evidence_type not in _DETERMINISTIC,
+        simulated=False,
     )
+    if evidence_type in _TIMED_MEDIA:
+        item.clock = ClockAssumption(
+            method="not_set", note="Device clock not verified. Set it on the evidence page."
+        )
+        item.recorded_at = _recorded_at(path)
+        item.extraction_note = "Waiting for observations" + (
+            f" · file says recording started {item.recorded_at}" if item.recorded_at else ""
+        )
+    elif evidence_type not in _DETERMINISTIC:
+        item.extraction_note = "Waiting for AI suggestions or manual events"
+
     data.evidence.append(item)
     if evidence_type is EvidenceType.CSV:
         # Register the stored bytes so the evidence viewer can show the original rows,
         # exactly as it does for seeded CSVs. Non-CSV uploads have no row structure.
         data.files[item.id] = path
     store.record(case_id, "API", "Evidence uploaded", item.id, f"{label} · sha256 {digest[:12]}")
-    return EvidenceUpload(**item.model_dump())
+
+    change = None
+    if evidence_type in _DETERMINISTIC:
+        change = _extract_log(data, item, path)
+        store.record(case_id, "SYS", "Events extracted", item.id, item.extraction_note)
+    return EvidenceUpload(**item.model_dump(), change=change)
+
+
+def _recorded_at(path: Path) -> str | None:
+    with path.open("rb") as fh:
+        head = fh.read(DETECTION_HEAD_BYTES)
+        found = media_start_time(head)
+        if found:
+            return found
+        fh.seek(0, 2)
+        size = fh.tell()
+        fh.seek(max(0, size - _MEDIA_TAIL_BYTES))
+        return media_start_time(fh.read())
+
+
+def _extract_log(data: CaseData, item: EvidenceItem, path: Path) -> ChangeSummary:
+    """Parse a stored log into events, add them, and re-run the rules."""
+    kind = {EvidenceType.CSV: "csv", EvidenceType.JSON: "json"}.get(item.type, "text")
+    result = parse_log(kind, path.read_bytes(), data.case.incident_start)
+    events = []
+    for i, row in enumerate(result.rows if result else [], 1):
+        n = normalize(row.source_time, item.clock.offset_seconds)
+        assumed = "; UTC offset assumed from the case window" if row.timezone_assumed else ""
+        events.append(
+            Event(
+                id=f"{item.id}-R{i}",
+                case_id=data.case.id,
+                evidence_id=item.id,
+                locator=row.locator,
+                description=row.description,
+                source_time=row.source_time,
+                normalized_time=n.normalized_time,
+                offset_seconds=n.offset_seconds,
+                normalization_rule=f"{n.rule}{clock_suffix(item)}{assumed}",
+                state=ClaimState.SUPPORTED,
+                record=row.record,
+            )
+        )
+    item.processing_status = ProcessingStatus.EXTRACTED
+    item.extraction_method = (
+        ExtractionMethod.CSV_PARSER
+        if item.type is EvidenceType.CSV
+        else ExtractionMethod.LOG_PARSER
+    )
+    item.extraction_note = result.note if result else "No parser for this type"
+    trigger = f"Uploaded {item.id} · {item.original_filename} · {len(events)} events"
+    return data.add_events(item, events, store.now(), trigger)
 
 
 @router.get("/cases/{case_id}/evidence/{evidence_id}/file")
