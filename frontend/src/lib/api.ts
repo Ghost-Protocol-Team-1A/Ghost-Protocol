@@ -6,6 +6,7 @@ import type {
   Claim,
   Conflict,
   EvidenceItem,
+  EvidenceUpload,
   Hypothesis,
   NewCase,
   NewReview,
@@ -61,6 +62,17 @@ export const api = {
     request<ChangeSummary>(`/api/cases/${id}/staged/${evidenceId}`, "POST"),
   createReview: (id: string, body: NewReview) =>
     request<Conflict | Hypothesis>(`/api/cases/${id}/reviews`, "POST", body),
+  /** Upload one evidence file. Same bytes twice return the existing item with duplicate=true. */
+  uploadEvidence: async (id: string, file: File): Promise<EvidenceUpload> => {
+    const form = new FormData();
+    form.append("file", file, file.name);
+    const res = await fetch(`${BASE}/api/cases/${id}/evidence`, { method: "POST", body: form, cache: "no-store" });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
+      throw new ApiError(res.status, body?.error.code ?? "http_error", body?.error.message ?? `Upload failed (${res.status})`);
+    }
+    return (await res.json()) as EvidenceUpload;
+  },
   createCase: (body: NewCase) => request<CaseSummary>("/api/cases", "POST", body),
   resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
   /** Whether the report export endpoint answers; false when the API is down or it 501s. */

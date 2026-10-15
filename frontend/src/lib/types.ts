@@ -41,6 +41,10 @@ export interface EvidenceItem {
   simulated: boolean;
 }
 
+export interface EvidenceUpload extends EvidenceItem {
+  duplicate: boolean;
+}
+
 export interface TimelineEvent {
   id: string;
   case_id: string;
