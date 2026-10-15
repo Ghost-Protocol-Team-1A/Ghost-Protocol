@@ -27,7 +27,21 @@ from app.models.domain import (
     StagedItem,
 )
 from app.services.ingest import load_seed, load_staged, staged_ids
+from app.services.normalize import normalize
 from app.services.rules import RULES, apply_findings_to_events
+
+
+def clock_suffix(item: EvidenceItem) -> str:
+    """Words added to a normalization rule that describe how trustworthy the clock is."""
+    method = item.clock.method
+    if method == "not_set":
+        return "; source clock not verified"
+    if method == "declared_by_investigator":
+        return "; offset declared by investigator"
+    if method == "inferred_from_anchors":
+        return "; inferred from anchors"
+    return ""
+
 
 SEEDS = ("case_001",)
 
@@ -47,6 +61,7 @@ class CaseData:
         self.conflict_reviews: dict[str, list[ReviewNote]] = {}
         self.events: list[Event] = []
         self.conflicts: list[Conflict] = []
+        self.base_states: dict[str, ClaimState] = {}
         self._analyze(seed.events)
 
     @classmethod
@@ -59,6 +74,7 @@ class CaseData:
         data.files, data.authoritative_for, data.changes = {}, {}, []
         data.conflict_reviews = {}
         data.events, data.conflicts = [], []
+        data.base_states = {}
         data.audit = [
             AuditEvent(
                 id="A-001",
@@ -73,7 +89,13 @@ class CaseData:
         return data
 
     def _analyze(self, events: list[Event]) -> None:
-        """Run every rule over the current evidence. Deterministic for the same inputs."""
+        """Run every rule over the current evidence. Deterministic for the same inputs.
+
+        States that rules set (a copy marked contradicted) are reset first, so a conflict that
+        disappears after new evidence or a clock change no longer marks its records.
+        """
+        for e in events:
+            e.state = self.base_states.setdefault(e.id, e.state)
         findings = [
             f
             for rule in RULES
@@ -138,21 +160,24 @@ class CaseData:
             )
         return items
 
-    def add_staged(self, evidence_id: str, at: str) -> ChangeSummary:
-        """Add held-back evidence, re-run the analysis, and record what changed."""
-        staged = load_staged(self.seed_name, evidence_id, self.case.id, at)
-        before_conflicts = {c.id: c.explanation for c in self.conflicts}
-        before_events = {e.id: e.state for e in self.events}
-        before_claims = {c.id: c.state for c in self.claims}
+    def _snapshot(self) -> tuple[dict[str, str], dict[str, ClaimState], dict[str, ClaimState]]:
+        return (
+            {c.id: c.explanation for c in self.conflicts},
+            {e.id: e.state for e in self.events},
+            {c.id: c.state for c in self.claims},
+        )
 
-        self.evidence.append(staged.evidence)
-        self.claims.extend(staged.claims)
-        for h in self.hypotheses:
-            note = staged.hypothesis_notes.get(h.id)
-            if note:
-                h.notes = f"{h.notes} {note}"
-        self._analyze(self.events + staged.events)
-
+    def _change(
+        self,
+        before: tuple[dict[str, str], dict[str, ClaimState], dict[str, ClaimState]],
+        at: str,
+        trigger: str,
+        added_evidence: list[str],
+        added_events: list[str],
+        added_claims: list[str],
+    ) -> ChangeSummary:
+        """Record what an addition changed, and what it did not."""
+        before_conflicts, before_events, before_claims = before
         after_conflicts = {c.id: c.explanation for c in self.conflicts}
         changes = [
             f"{e.id}: {before_events[e.id].value} → {e.state.value}"
@@ -180,10 +205,10 @@ class CaseData:
             id=f"CH-{len(self.changes) + 1:02d}",
             case_id=self.case.id,
             at=at,
-            trigger=f"Added {staged.evidence.id} · {staged.evidence.source_name}",
-            added_evidence=[staged.evidence.id],
-            added_events=[e.id for e in staged.events],
-            added_claims=[c.id for c in staged.claims],
+            trigger=trigger,
+            added_evidence=added_evidence,
+            added_events=added_events,
+            added_claims=added_claims,
             conflicts_added=sorted(set(after_conflicts) - set(before_conflicts)),
             conflicts_removed=sorted(set(before_conflicts) - set(after_conflicts)),
             state_changes=changes,
@@ -191,6 +216,66 @@ class CaseData:
         )
         self.changes.append(summary)
         return summary
+
+    def add_staged(self, evidence_id: str, at: str) -> ChangeSummary:
+        """Add held-back evidence, re-run the analysis, and record what changed."""
+        staged = load_staged(self.seed_name, evidence_id, self.case.id, at)
+        before = self._snapshot()
+        self.evidence.append(staged.evidence)
+        self.claims.extend(staged.claims)
+        for h in self.hypotheses:
+            note = staged.hypothesis_notes.get(h.id)
+            if note:
+                h.notes = f"{h.notes} {note}"
+        self._analyze(self.events + staged.events)
+        return self._change(
+            before,
+            at,
+            f"Added {staged.evidence.id} · {staged.evidence.source_name}",
+            [staged.evidence.id],
+            [e.id for e in staged.events],
+            [c.id for c in staged.claims],
+        )
+
+    def add_events(
+        self, item: EvidenceItem, events: list[Event], at: str, trigger: str
+    ) -> ChangeSummary:
+        """Add events from one evidence item (parsed, observed or accepted), then re-run rules."""
+        before = self._snapshot()
+        self._analyze(self.events + events)
+        return self._change(before, at, trigger, [], [e.id for e in events], [])
+
+    def item(self, evidence_id: str) -> EvidenceItem | None:
+        return next((e for e in self.evidence if e.id == evidence_id), None)
+
+    def next_event_id(self, evidence_id: str, letter: str) -> str:
+        prefix = f"{evidence_id}-{letter}"
+        used = [
+            int(e.id[len(prefix) :])
+            for e in self.events
+            if e.id.startswith(prefix) and e.id[len(prefix) :].isdigit()
+        ]
+        return f"{prefix}{max(used, default=0) + 1}"
+
+    def renormalize(self, item: EvidenceItem) -> None:
+        """Recompute normalized times for one source after its clock changed."""
+        for e in self.events:
+            if e.evidence_id != item.id or e.source_time is None:
+                continue
+            n = normalize(
+                e.source_time,
+                item.clock.offset_seconds,
+                e.uncertainty_seconds if e.approximate else 0,
+            )
+            assumed = (
+                "; UTC offset assumed from the case window"
+                if "assumed" in e.normalization_rule
+                else ""
+            )
+            e.normalized_time = n.normalized_time
+            e.offset_seconds = n.offset_seconds
+            e.normalization_rule = f"{n.rule}{clock_suffix(item)}{assumed}"
+        self._analyze(self.events)
 
     def original_rows(self, evidence_id: str) -> tuple[str, list[str], list[dict[str, str]]] | None:
         """Read-only view of an original log file: (filename, columns, rows)."""
