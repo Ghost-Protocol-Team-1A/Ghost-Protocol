@@ -12,6 +12,13 @@ export interface Case {
   fictional: boolean;
 }
 
+export interface NewCase {
+  title: string;
+  description: string;
+  incident_start: string;
+  incident_end: string;
+}
+
 export interface CaseSummary {
   case: Case;
   evidence_count: number;

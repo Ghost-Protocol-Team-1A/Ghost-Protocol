@@ -7,6 +7,7 @@ import type {
   Conflict,
   EvidenceItem,
   Hypothesis,
+  NewCase,
   OriginalRecord,
   StagedItem,
   TimelineEvent,
@@ -24,8 +25,13 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, method: "GET" | "POST" = "GET"): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, { method, cache: "no-store" });
+async function request<T>(path: string, method: "GET" | "POST" = "GET", body?: unknown): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    cache: "no-store",
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
     throw new ApiError(
@@ -52,6 +58,7 @@ export const api = {
   changes: (id: string) => get<ChangeSummary[]>(`/api/cases/${id}/changes`),
   addStaged: (id: string, evidenceId: string) =>
     request<ChangeSummary>(`/api/cases/${id}/staged/${evidenceId}`, "POST"),
+  createCase: (body: NewCase) => request<CaseSummary>("/api/cases", "POST", body),
   resetDemo: () => request<{ status: string }>("/api/demo/reset", "POST"),
   /** Whether the report export endpoint is implemented (it returns 501 until it is). */
   reportAvailable: async (id: string): Promise<boolean> => {
