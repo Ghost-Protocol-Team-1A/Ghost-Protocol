@@ -36,6 +36,8 @@ def create_case(body: CaseCreate) -> CaseSummary:
         body.description.strip(),
         body.incident_start.isoformat(),
         body.incident_end.isoformat(),
+        scope=body.scope.strip(),
+        classification=body.classification,
     )
     return data.summary()
 
