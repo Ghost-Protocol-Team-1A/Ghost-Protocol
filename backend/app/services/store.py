@@ -17,6 +17,7 @@ from app.models.domain import (
     Claim,
     ClaimState,
     Conflict,
+    DataClassification,
     Event,
     EvidenceItem,
     Hypothesis,
@@ -221,7 +222,15 @@ class Store:
             data = CaseData(name)
             self.cases[data.case.id] = data
 
-    def create_case(self, title: str, description: str, start: str, end: str) -> CaseData:
+    def create_case(
+        self,
+        title: str,
+        description: str,
+        start: str,
+        end: str,
+        scope: str = "",
+        classification: DataClassification = DataClassification.SYNTHETIC,
+    ) -> CaseData:
         number = max(int(cid.split("-")[1]) for cid in self.cases) + 1 if self.cases else 1
         case = Case(
             id=f"CASE-{number:03d}",
@@ -231,6 +240,8 @@ class Store:
             incident_end=end,
             status="open",
             fictional=False,
+            scope=scope,
+            classification=classification,
         )
         data = CaseData.blank(case, self.now())
         self.cases[case.id] = data

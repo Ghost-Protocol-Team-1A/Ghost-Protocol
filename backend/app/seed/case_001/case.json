@@ -8,6 +8,8 @@
     "incident_end": "2026-10-10T22:00:00+01:00",
     "status": "active",
     "fictional": true,
+    "scope": "Reconstruct the order of recorded events between 21:00 and 22:00. Not in scope: who is responsible.",
+    "classification": "synthetic",
     "subject_asset": "EQ-4471"
   },
   "ingested_at": "2026-10-11T09:00:00Z",
