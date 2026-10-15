@@ -2,7 +2,8 @@ import Link from "next/link";
 import { StateBadge } from "@/components/StateBadge";
 import panel from "@/components/panel.module.css";
 import { api, ApiError, localTime } from "@/lib/api";
-import { clockLabel, formatBytes, rowsWithEvents } from "@/lib/evidence";
+import { OriginalPreview } from "@/features/evidence/OriginalPreview";
+import { clockLabel, extractionLabel, formatBytes, rowsWithEvents } from "@/lib/evidence";
 import { conflictTitle } from "@/lib/labels";
 import styles from "./evidence.module.css";
 
@@ -110,6 +111,8 @@ export default async function EvidencePage({
                 </tbody>
               </table>
             </div>
+          ) : item.sha256 ? (
+            <OriginalPreview item={item} href={`/cases/${caseId}/evidence/${item.id}/file`} />
           ) : original === null ? (
             <div className={styles.simulated} role="note">
               <p className={styles.simulatedTitle}>No original file in this demo</p>
@@ -139,7 +142,7 @@ export default async function EvidencePage({
             <dd>{item.ingested_at.replace("T", " ").replace("Z", " UTC")}</dd>
             <dt>Extraction</dt>
             <dd>
-              {item.simulated ? "Simulated from seed metadata" : "Deterministic CSV parser"}
+              {extractionLabel(item)}
             </dd>
             <dt className={styles.cyan}>Source clock</dt>
             <dd>

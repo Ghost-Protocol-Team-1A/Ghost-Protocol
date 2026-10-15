@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clockLabel, formatBytes, rowsWithEvents } from "./evidence";
+import { clockLabel, extractionLabel, formatBytes, rowsWithEvents } from "./evidence";
 import type { TimelineEvent } from "./types";
 
 const ev = (id: string, evidence_id: string, locator: string) =>
@@ -29,5 +29,15 @@ describe("evidence helpers", () => {
   it("formats sizes", () => {
     expect(formatBytes(null)).toBe("—");
     expect(formatBytes(2048)).toBe("2.0 KB");
+  });
+
+  it("says when extraction has not run on an upload", () => {
+    expect(extractionLabel({ processing_status: "queued", simulated: true, type: "audio" })).toMatch(/Not run yet/);
+    expect(extractionLabel({ processing_status: "extracted", simulated: true, type: "video" })).toBe(
+      "Simulated from seed metadata",
+    );
+    expect(extractionLabel({ processing_status: "extracted", simulated: false, type: "csv" })).toBe(
+      "Deterministic CSV parser",
+    );
   });
 });
