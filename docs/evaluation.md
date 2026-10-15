@@ -18,18 +18,27 @@ Columns:
 
 | Check | How to verify | Result | Date | Who |
 | :--- | :--- | :--- | :--- | :--- |
-| **01. Exactly six evidence items after reset** | 1. Send `POST /api/demo/reset`.<br>2. Call `GET /api/cases/CASE-001/evidence`.<br>3. Verify array length is exactly 6 (`E-01` through `E-06`).<br>4. Verify `E-07` is present in `GET /api/cases/CASE-001/staged`. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **02. EV-014 dual time display** | 1. Call `GET /api/cases/CASE-001/timeline`.<br>2. Find event `EV-014`.<br>3. Verify `source_time` is `2026-10-10T21:16:00+01:00`.<br>4. Verify `normalized_time` is `2026-10-10T20:14:00Z` (displayed as `21:14:00` local).<br>5. Verify `offset_seconds` is `120` (rule `offset -120 s`).<br>6. Check UI at `/cases/CASE-001/timeline` renders both values side-by-side. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **03. C-01 detected by RULE-DUP-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-01`.<br>3. Verify `rule_id` equals `RULE-DUP-001`.<br>4. Verify linked evidence contains `E-04` (row 18) and `E-05` (row 7).<br>5. Verify explanation notes potential duplicate/import error and explicitly states **"Not proof of tampering"**.<br>6. Inspect UI at `/cases/CASE-001/conflicts?c=C-01`. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **04. C-02 detected by RULE-TIME-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-02`.<br>3. Verify `rule_id` equals `RULE-TIME-001`.<br>4. Verify `evidence_ids` is `["E-02"]` and the explanation says it runs 120 s fast against the reference clock.<br>5. Verify UI transparently states that the 120s offset is declared in fixture metadata. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **05. Identity neutrality (no accusatory labeling)** | 1. Call `GET /api/cases/CASE-001/timeline` and `GET /api/cases/CASE-001/claims`.<br>2. Verify no person's name or identity is attached as responsible or guilty.<br>3. Verify claim `CL-04` ("The person in E-01 is the holder of badge B-117") remains in state `unresolved`.<br>4. Audit UI for any accusatory tone. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **06. Evidence citation integrity** | 1. Call `GET /api/cases/CASE-001/claims`.<br>2. Iterate through all claims (`CL-01` to `CL-06`).<br>3. Assert every claim whose state is NOT `unresolved` has at least 1 valid `evidence_links` citation with non-empty `locator`.<br>4. Assert `CL-04` and `CL-06` have empty citations and state `unresolved`. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **07. Reset idempotence** | 1. Trigger `POST /api/demo/reset`.<br>2. Dump JSON of `/timeline`, `/conflicts`, `/claims`, `/hypotheses`.<br>3. Trigger `POST /api/demo/reset` again.<br>4. Dump JSON again and run `diff -u`.<br>5. Assert 0 diff lines (bit-for-bit identical). | PENDING | 2026-10-15 | @DANTE-1903 |
+| **01. Exactly six evidence items after reset** | 1. Send `POST /api/demo/reset`.<br>2. Call `GET /api/cases/CASE-001/evidence`.<br>3. Verify array length is exactly 6 (`E-01` through `E-06`).<br>4. Verify `E-07` is present in `GET /api/cases/CASE-001/staged`. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **02. EV-014 dual time display** | 1. Call `GET /api/cases/CASE-001/timeline`.<br>2. Find event `EV-014`.<br>3. Verify `source_time` is `2026-10-10T21:16:00+01:00`.<br>4. Verify `normalized_time` is `2026-10-10T20:14:00Z` (displayed as `21:14:00` local).<br>5. Verify `offset_seconds` is `120` (rule `offset -120 s`).<br>6. Check UI at `/cases/CASE-001/timeline` renders both values side-by-side. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **03. C-01 detected by RULE-DUP-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-01`.<br>3. Verify `rule_id` equals `RULE-DUP-001`.<br>4. Verify linked evidence contains `E-04` (row 18) and `E-05` (row 7).<br>5. Verify explanation notes potential duplicate/import error and explicitly states **"Not proof of tampering"**.<br>6. Inspect UI at `/cases/CASE-001/conflicts?c=C-01`. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **04. C-02 detected by RULE-TIME-001** | 1. Call `GET /api/cases/CASE-001/conflicts`.<br>2. Locate conflict `C-02`.<br>3. Verify `rule_id` equals `RULE-TIME-001`.<br>4. Verify `evidence_ids` is `["E-02"]` and the explanation says it runs 120 s fast against the reference clock.<br>5. Verify UI transparently states that the 120s offset is declared in fixture metadata. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **05. Identity neutrality (no accusatory labeling)** | 1. Call `GET /api/cases/CASE-001/timeline` and `GET /api/cases/CASE-001/claims`.<br>2. Verify no person's name or identity is attached as responsible or guilty.<br>3. Verify claim `CL-04` ("The person in E-01 is the holder of badge B-117") remains in state `unresolved`.<br>4. Audit UI for any accusatory tone. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **06. Evidence citation integrity** | 1. Call `GET /api/cases/CASE-001/claims`.<br>2. Iterate through all claims (`CL-01` to `CL-06`).<br>3. Assert every claim whose state is NOT `unresolved` has at least 1 valid `evidence_links` citation with non-empty `locator`.<br>4. Assert `CL-04` and `CL-06` have empty citations and state `unresolved`. | PASS | 2026-10-15 | @Bolajiomo99 |
+| **07. Reset idempotence** | 1. Trigger `POST /api/demo/reset`.<br>2. Dump JSON of `/timeline`, `/conflicts`, `/claims`, `/hypotheses`.<br>3. Trigger `POST /api/demo/reset` again.<br>4. Dump JSON again and run `diff -u`.<br>5. Assert 0 diff lines (bit-for-bit identical). | PASS | 2026-10-15 | @Bolajiomo99 |
 | **08. Time for new viewer to find C-01 unaided** | 1. Present fresh subject with `/dashboard`.<br>2. Prompt: *"Find the high-severity conflict concerning duplicate records."*<br>3. Time duration using stopwatch until subject opens `/cases/CASE-001/conflicts?c=C-01`.<br>4. Target benchmark: **< 30 seconds**. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **09. Clean-machine setup time** | 1. Execute clean setup on a pristine environment (see Section 3).<br>2. Time execution from `git clone` to passing checks and loaded UI.<br>3. Target benchmark: **< 5 minutes (300 seconds)**. | PENDING | 2026-10-15 | @DANTE-1903 |
-| **10. Repeat-run engine determinism** | 1. Run determinism verification script (Section 4) executing 10 sequential engine evaluations without server restart.<br>2. Compute SHA-256 hash of serialized case output after each run.<br>3. Target benchmark: **10/10 identical hashes (0% variance)**. | PENDING | 2026-10-15 | @DANTE-1903 |
+| **09. Clean-machine setup time** | 1. Execute clean setup on a pristine environment (see Section 3).<br>2. Time execution from `git clone` to passing checks and loaded UI.<br>3. Target benchmark: **< 5 minutes (300 seconds)**. | PASS (≈61 s) | 2026-10-15 | @Bolajiomo99 |
+| **10. Repeat-run engine determinism** | 1. Run determinism verification script (Section 4) executing 10 sequential engine evaluations without server restart.<br>2. Compute SHA-256 hash of serialized case output after each run.<br>3. Target benchmark: **10/10 identical hashes (0% variance)**. | PASS (10/10 identical) | 2026-10-15 | @Bolajiomo99 |
 
 ---
+
+### Automated run, 2026-10-15
+
+Checks 01–07 and 10 were run against `main` with an in-process API client; check 09 on a fresh
+`git clone` following the README (backend set up and 102 tests passing in 25 s, frontend
+installed, linted, type-checked, 29 tests and production build in 36 s). The fresh copy was then
+started and the demo script's path checked page by page (28 checks, all passing, including the
+live E-07 step and both report downloads). **Check 08 and the rehearsal runs need people and a
+stopwatch and are still pending.**
 
 ## 2. Protocol: Unaided Discovery of C-01 (Check 08)
 
@@ -188,9 +197,9 @@ else:
 
 | Submission Trial | Presenter | Timed Demo Duration | Master Checklist | Live E-07 Ingestion | Sign-Off Lead | Status |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Final Run 1** | @DANTE-1903 | 02:58 | 10/10 PASS | Verified | @Bolajiomo99 | PENDING |
-| **Final Run 2** | @DANTE-1903 | 02:55 | 10/10 PASS | Verified | @Bolajiomo99 | PENDING |
-| **Final Run 3** | @DANTE-1903 | 02:59 | 10/10 PASS | Verified | @Bolajiomo99 | PENDING |
+| **Final Run 1** | @DANTE-1903 | _ | _ | Pending | @Bolajiomo99 | PENDING |
+| **Final Run 2** | @DANTE-1903 | _ | _ | Pending | @Bolajiomo99 | PENDING |
+| **Final Run 3** | @DANTE-1903 | _ | _ | Pending | @Bolajiomo99 | PENDING |
 
 ---
 
