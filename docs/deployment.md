@@ -3,6 +3,13 @@
 The judges' demo runs as **one Docker web service on Render**, kept awake by an **UptimeRobot**
 monitor.
 
+| | |
+| --- | --- |
+| Live URL | https://ghost-protocol-hbwg.onrender.com |
+| Health | https://ghost-protocol-hbwg.onrender.com/healthz |
+| Render | workspace *Ghost Protocol*, service `ghost-protocol` (free plan, Frankfurt), auto-deploys from `main` |
+| UptimeRobot | keyword monitor on `/healthz` for `"status":"ok"`, every 5 minutes, email alert to the lead |
+
 ## How it is put together
 
 ```

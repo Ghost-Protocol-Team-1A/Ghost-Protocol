@@ -10,6 +10,10 @@ whether the evidence **supports**, **contradicts**, merely **infers**, or **cann
 It does not decide who is responsible. It shows investigators what the evidence says and what
 it doesn't.
 
+**Live demo:** https://ghost-protocol-hbwg.onrender.com/dashboard — fictional data; press
+**Reset demo** on the dashboard to start clean. If it has been idle, the first load can take up
+to a minute.
+
 > **Status: the full demo workflow runs end to end.**
 > CASE-001 loads; times are normalized; three rules detect C-01, C-02 and C-03; and an
 > investigator can filter the timeline, inspect conflicts, record review decisions, compare
