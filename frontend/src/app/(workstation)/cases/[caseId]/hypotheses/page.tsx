@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StateBadge } from "@/components/StateBadge";
+import { ReviewForm, ReviewHistory } from "@/features/review/ReviewForm";
 import panel from "@/components/panel.module.css";
 import { api, ApiError } from "@/lib/api";
 import type { EvidenceItem, EvidenceLink } from "@/lib/types";
@@ -105,6 +106,8 @@ export default async function HypothesesPage({
                       />
                     </div>
                   </div>
+                  <ReviewHistory reviews={h.reviews} />
+                  <ReviewForm caseId={caseId} targetId={h.id} />
                   {h.conflict_id && (
                     <Link href={`/cases/${caseId}/conflicts?c=${h.conflict_id}`}>
                       View conflict {h.conflict_id} →
