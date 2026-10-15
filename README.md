@@ -10,7 +10,7 @@ whether the evidence **supports**, **contradicts**, merely **infers**, or **cann
 It does not decide who is responsible. It shows investigators what the evidence says and what
 it doesn't.
 
-**Live demo:** https://ghost-protocol-hbwg.onrender.com/dashboard — fictional data; press
+**Live demo:** https://ghost-protocol-demo.onrender.com — start at the landing page, or go straight to the [dashboard](https://ghost-protocol-demo.onrender.com/dashboard); fictional data; press
 **Reset demo** on the dashboard to start clean. If it has been idle, the first load can take up
 to a minute.
 
