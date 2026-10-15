@@ -1,6 +1,5 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "@/lib/api";
+import { afterEach, describe, expect, it } from "vitest";
 import type { AuditEvent } from "@/lib/types";
 import { AuditTrail } from "./AuditTrail";
 
@@ -70,13 +69,6 @@ const FIXTURE: AuditEvent[] = [
   },
 ];
 
-function serve(data: AuditEvent[]) {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn().mockResolvedValue({ ok: true, json: async () => data }),
-  );
-}
-
 /** Body rows of the table, without the header row. */
 function rows() {
   return screen.getAllByRole("row").slice(1);
@@ -84,19 +76,11 @@ function rows() {
 
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
 });
 
 describe("AuditTrail", () => {
-  it("renders rows from the fixture, newest first, with links to each entity screen", async () => {
-    serve(FIXTURE);
-    render(<AuditTrail caseId="CASE-001" />);
-
-    await screen.findByRole("table");
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/cases/CASE-001/audit"),
-      expect.any(Object),
-    );
+  it("renders rows from the fixture, newest first, with links to each entity screen", () => {
+    render(<AuditTrail caseId="CASE-001" events={FIXTURE} />);
 
     const body = rows();
     expect(body).toHaveLength(7);
@@ -120,10 +104,8 @@ describe("AuditTrail", () => {
     expect(screen.queryByRole("link", { name: "CASE-001" })).toBeNull();
   });
 
-  it("reduces the rows when filters are applied, and combines them", async () => {
-    serve(FIXTURE);
-    render(<AuditTrail caseId="CASE-001" />);
-    await screen.findByRole("table");
+  it("reduces the rows when filters are applied, and combines them", () => {
+    render(<AuditTrail caseId="CASE-001" events={FIXTURE} />);
     expect(rows()).toHaveLength(7);
 
     fireEvent.change(screen.getByLabelText("Actor"), { target: { value: "API" } });
@@ -144,10 +126,8 @@ describe("AuditTrail", () => {
     expect(rows()[0]).toHaveTextContent("C-01");
   });
 
-  it("says so when no event matches the active filters", async () => {
-    serve(FIXTURE);
-    render(<AuditTrail caseId="CASE-001" />);
-    await screen.findByRole("table");
+  it("says so when no event matches the active filters", () => {
+    render(<AuditTrail caseId="CASE-001" events={FIXTURE} />);
 
     fireEvent.change(screen.getByLabelText("Actor"), { target: { value: "BJ" } });
     fireEvent.change(screen.getByLabelText("Action"), {
@@ -158,25 +138,12 @@ describe("AuditTrail", () => {
     expect(screen.getByText("No audit events match these filters")).toBeInTheDocument();
   });
 
-  it("shows the error state when the API fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new ApiError(404, "case_not_found", "Case CASE-999 not found")),
-    );
-    render(<AuditTrail caseId="CASE-999" />);
+  it("shows a friendly empty state when there are no events at all", () => {
+    render(<AuditTrail caseId="CASE-001" events={[]} />);
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(
-      "Could not load the audit trail: Case CASE-999 not found",
-    );
     expect(screen.queryByRole("table")).toBeNull();
-  });
-
-  it("shows a loading state while the request is in flight", () => {
-    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
-    render(<AuditTrail caseId="CASE-001" />);
-
-    expect(screen.getByRole("status")).toHaveTextContent("Loading the audit trail…");
-    expect(screen.queryByRole("table")).toBeNull();
+    expect(
+      screen.getByText("No audit events have been recorded for CASE-001 yet."),
+    ).toBeInTheDocument();
   });
 });

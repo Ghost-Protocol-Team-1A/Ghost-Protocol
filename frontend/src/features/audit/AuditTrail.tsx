@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import panel from "@/components/panel.module.css";
-import { api, ApiError } from "@/lib/api";
 import type { AuditEvent } from "@/lib/types";
 import styles from "./audit.module.css";
 
@@ -53,40 +52,13 @@ function stamp(iso: string): string {
   return `${iso.slice(0, 10)} ${iso.slice(11, 19)} UTC`;
 }
 
-interface Load {
-  caseId: string;
-  events: AuditEvent[] | null; // null while the request is in flight
-  failure: string | null;
-}
-
-export function AuditTrail({ caseId }: { caseId: string }) {
-  const [load, setLoad] = useState<Load>({ caseId, events: null, failure: null });
+export function AuditTrail({ caseId, events }: { caseId: string; events: AuditEvent[] }) {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .audit(caseId)
-      .then((events) => {
-        if (!cancelled) setLoad({ caseId, events, failure: null });
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        const message = err instanceof ApiError ? err.message : "The API is not reachable.";
-        setLoad({ caseId, events: null, failure: message });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [caseId]);
-
-  const current = load.caseId === caseId ? load : null;
-
-  const newest = useMemo(() => {
-    const events = current?.events;
-    if (!events) return [];
-    return [...events].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-  }, [current]);
+  const newest = useMemo(
+    () => [...events].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)),
+    [events],
+  );
 
   const visible = useMemo(
     () =>
@@ -98,22 +70,6 @@ export function AuditTrail({ caseId }: { caseId: string }) {
       ),
     [newest, filters],
   );
-
-  if (current?.failure) {
-    return (
-      <p role="alert" className={panel.error}>
-        Could not load the audit trail: {current.failure}
-      </p>
-    );
-  }
-
-  if (!current?.events) {
-    return (
-      <p role="status" className={styles.muted}>
-        Loading the audit trail…
-      </p>
-    );
-  }
 
   if (newest.length === 0) {
     return (
