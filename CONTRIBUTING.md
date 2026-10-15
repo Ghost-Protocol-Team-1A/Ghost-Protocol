@@ -49,6 +49,25 @@ acceptance criteria. See [docs/team-tasks.md](docs/team-tasks.md).
 - @Bolajiomo99 reviews and merges. Address review comments with new commits; don't
   force-push over someone else's commits.
 
+## Keeping your branch up to date
+
+`main` only accepts **Rebase and merge**, and GitHub cannot rebase a branch that contains a merge
+commit. So **never** bring `main` into your branch with a merge:
+
+- don't press GitHub's **Update branch** button on a pull request;
+- don't run `git merge main` or `git pull origin main` on your branch.
+
+Rebase instead, then push your own branch:
+
+```bash
+git fetch origin
+git rebase origin/main            # fix any conflicts, then: git add <file> && git rebase --continue
+cd backend && .venv/bin/pytest -q && cd ../frontend && npm test   # re-run checks
+git push --force-with-lease       # only on your own branch
+```
+
+If your branch already has a merge commit, the same `git rebase origin/main` removes it.
+
 ## Fixing a failed Contributor check
 
 If your editor or tool added an AI co-author line, rewrite the message and push again:
