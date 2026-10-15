@@ -54,3 +54,30 @@
 .coral {
   color: var(--gp-coral);
 }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gp-space-2);
+  margin-bottom: var(--gp-space-4);
+}
+
+.tab {
+  font-size: var(--gp-text-sm);
+  padding: var(--gp-space-2) var(--gp-space-3);
+  border: 1px solid var(--gp-border);
+  border-radius: var(--gp-radius);
+  color: var(--gp-text-muted);
+  text-decoration: none;
+}
+
+.tab:hover,
+.tab[aria-current="page"] {
+  color: var(--gp-text);
+  border-color: var(--gp-cyan);
+  background: var(--gp-surface-raised);
+}
+
+.empty {
+  color: var(--gp-text-muted);
+}

@@ -1,10 +1,16 @@
 import Link from "next/link";
 import panel from "@/components/panel.module.css";
 import { api, ApiError } from "@/lib/api";
+import { CASE_FILTERS, CLASSIFICATIONS, filterCases } from "@/lib/cases";
 import { pad } from "@/lib/dashboard";
 import styles from "./cases.module.css";
 
-export default async function CasesPage() {
+export default async function CasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter } = await searchParams;
   let cases;
   try {
     cases = await api.cases();
@@ -16,6 +22,8 @@ export default async function CasesPage() {
       </p>
     );
   }
+
+  const shown = filterCases(cases, filter);
 
   return (
     <section>
@@ -29,6 +37,22 @@ export default async function CasesPage() {
         </Link>
       </div>
 
+      <nav aria-label="Filter cases" className={styles.tabs}>
+        {CASE_FILTERS.map((f) => {
+          const current = (filter ?? "all") === f.id;
+          return (
+            <Link
+              key={f.id}
+              href={f.id === "all" ? "/cases" : `/cases?filter=${f.id}`}
+              aria-current={current ? "page" : undefined}
+              className={styles.tab}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
+      </nav>
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -39,10 +63,18 @@ export default async function CasesPage() {
               <th scope="col">Evidence</th>
               <th scope="col">Open conflicts</th>
               <th scope="col">Status</th>
+              <th scope="col">Data</th>
             </tr>
           </thead>
           <tbody>
-            {cases.map(({ case: c, evidence_count, open_conflicts }) => (
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan={7} className={styles.empty}>
+                  No cases match this filter.
+                </td>
+              </tr>
+            )}
+            {shown.map(({ case: c, evidence_count, open_conflicts }) => (
               <tr key={c.id}>
                 <td>
                   <Link href={`/cases/${c.id}/${evidence_count ? "timeline" : "evidence"}`}>{c.id}</Link>
@@ -58,6 +90,7 @@ export default async function CasesPage() {
                 <td>{pad(evidence_count)}</td>
                 <td className={open_conflicts ? styles.coral : undefined}>{pad(open_conflicts)}</td>
                 <td>{c.status}</td>
+                <td>{CLASSIFICATIONS.find((x) => x.value === c.classification)?.label ?? c.classification}</td>
               </tr>
             ))}
           </tbody>
