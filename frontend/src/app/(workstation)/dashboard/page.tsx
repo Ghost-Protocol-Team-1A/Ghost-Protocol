@@ -3,11 +3,19 @@ import { Icon } from "@/components/Icon";
 import panel from "@/components/panel.module.css";
 import { api, ApiError } from "@/lib/api";
 import { metrics, offsetEvents, pad } from "@/lib/dashboard";
+import { greeting } from "@/lib/identity";
 import { conflictTitle, SEVERITY_LABELS } from "@/lib/labels";
+import { currentIdentity } from "@/lib/session";
 import { addStagedEvidence, resetDemo } from "../actions";
 import styles from "./dashboard.module.css";
 
 const CASE_ID = "CASE-001";
+
+/** Hour of day where the demo is presented, for the greeting. */
+function lagosHour(): number {
+  const hour = new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Africa/Lagos" });
+  return Number(hour.format(new Date()));
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -15,6 +23,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ added?: string; reset?: string }>;
 }) {
   const { added, reset } = await searchParams;
+  const identity = await currentIdentity();
 
   let data;
   try {
@@ -48,7 +57,9 @@ export default async function DashboardPage({
       <div className={styles.head}>
         <div>
           <p className="gp-eyebrow">{CASE_ID} · fictional</p>
-          <h1 className={panel.pageTitle}>Case dashboard</h1>
+          <h1 className={panel.pageTitle}>
+            {identity ? `${greeting(lagosHour())}, ${identity.name}.` : "Case dashboard"}
+          </h1>
           <p className={styles.lead}>
             {open.length === 0
               ? "Every conflict has a decision."
