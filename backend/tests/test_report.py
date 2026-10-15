@@ -51,10 +51,10 @@ def test_conflicts_name_their_rules_and_evidence(client):
     conflicts = _section(report, "conflicts")["items"]
     by_id = {c["id"]: c for c in conflicts}
     assert by_id["C-01"]["rule_id"] == "RULE-DUP-001"
-    assert by_id["C-02"]["rule_id"] == "RULE-TIME-001"
+    assert by_id["C-02"]["rule_id"] == "RULE-TIME-002"
     assert set(by_id["C-01"]["evidence"]) and set(by_id["C-02"]["evidence"])
     body = client.get("/api/cases/CASE-001/report?format=md").text
-    assert "RULE-DUP-001" in body and "RULE-TIME-001" in body
+    assert "RULE-DUP-001" in body and "RULE-TIME-002" in body
 
 
 def test_no_claim_is_dropped(client):
