@@ -1,0 +1,13 @@
+# Render blueprint for the judges' demo: one Docker web service running the website
+# (public) and the API (private, 127.0.0.1 inside the container). See docs/deployment.md.
+services:
+  - type: web
+    name: ghost-protocol
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: true
+    branch: main
