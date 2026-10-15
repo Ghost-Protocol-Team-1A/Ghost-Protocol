@@ -5,10 +5,10 @@ monitor.
 
 | | |
 | --- | --- |
-| Live URL | https://ghost-protocol-hbwg.onrender.com |
-| Health | https://ghost-protocol-hbwg.onrender.com/healthz |
-| Render | workspace *Ghost Protocol*, service `ghost-protocol` (free plan, Frankfurt), auto-deploys from `main` |
-| UptimeRobot | keyword monitor on `/healthz` for `"status":"ok"`, every 5 minutes, email alert to the lead |
+| Live URL | https://ghost-protocol-demo.onrender.com |
+| Health | https://ghost-protocol-demo.onrender.com/healthz |
+| Render | workspace *Ghost Protocol*, service `ghost-protocol-demo` (free plan), deploys `main`. Auto-deploy has not fired on merges, so after a merge trigger **Manual Deploy → Deploy latest commit** in Render |
+| UptimeRobot | keyword monitor *Ghost Protocol demo* on `/healthz` for `"status":"ok"`, every 5 minutes, email alert to the lead |
 
 ## How it is put together
 
