@@ -87,7 +87,7 @@ missing at 22:00. Six evidence items:
 
 What the system must show:
 
-- **C-02 · Clock offset (RULE-TIME-001).** E-02's trolley event: source **21:16:00**, normalized **21:14:00**. Both times are shown, with the reason.
+- **C-02 · Clock offset inferred (RULE-TIME-002).** E-02's clock is not declared anywhere. The engine finds two moments the camera shares with reference-clock sources (the bay door opening, also in the access log E-04; the alarm, also in the alarm audio E-03). Both say the camera runs **120 s fast**, so the trolley event moves from source **21:16:00** to normalized **21:14:00**. Both times are shown, with the anchor pairs that justify the change.
 - **C-01 · Copied log record (RULE-DUP-001).** E-05 row 7 duplicates E-04 row 18 but is stamped 21:09:00, before anyone enters at 21:10:00. Flagged for review; **not** called tampering.
 - **Identity not established.** Nothing links the person on camera to a badge. The claim stays Unresolved.
 - **Live update.** Adding a new evidence item (E-07) updates the case, and the system says which conclusions did *not* change.
@@ -335,7 +335,7 @@ Ghost Protocol is an investigative aid, not a judge.
 ## Known limitations
 
 - Video, audio and PDF extraction is simulated from seed metadata in the MVP and labeled as such.
-- The CASE-001 clock offset is declared in the fixture, not inferred from the evidence; the UI says so.
+- The CASE-001 clock offset is inferred from anchor events, but those anchor events are themselves simulated from seed metadata (no real video analysis).
 - Authentication in the demo is not production security; the deployment is for a controlled demo only.
 - Results on two small synthetic cases say nothing about accuracy on real investigations.
 - "Ghost Protocol" is a working name; a similar name exists in this space (see [docs/competitors.md](docs/competitors.md)).

@@ -52,7 +52,8 @@ not yet on `main`.
 | Rule | Finds | Severity | Says it cannot tell |
 | --- | --- | --- | --- |
 | `RULE-DUP-001` | A log row repeated in another source with the same badge, door and event code but a different time. The copy (the row in the non-authoritative source) becomes **Contradicted**. | High | Whether the copy came from an import job, a manual edit, or a genuine second event. |
-| `RULE-TIME-001` | A source whose clock differs from the reference clock; lists the events it adjusted. | Medium | For the demo: that the offset is declared in the fixture, not inferred. |
+| `RULE-TIME-001` | A source with a declared clock offset; lists the events it adjusted. | Medium | Whether the offset was constant over the whole recording. |
+| `RULE-TIME-002` | A source whose clock offset was inferred: the median of its anchor deltas against reference-clock sources. Reports every anchor pair and the spread. | Medium | Whether the offset held outside the anchored moments, and whether each anchor pair records the same moment. |
 | `RULE-CLAIM-001` | An identity claim that no source supports. | Review | Who the person is; appearance on camera does not establish identity. |
 
 Conflict IDs (`C-01`…) follow rule order, so the same inputs always produce the same IDs.
