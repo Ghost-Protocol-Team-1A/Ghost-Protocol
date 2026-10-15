@@ -150,6 +150,8 @@ export interface NewReview {
   target_id: string;
   note: string;
   status?: ReviewStatus;
+  /** Who made the decision; the API falls back to its default actor when absent. */
+  actor?: string;
 }
 
 export interface StagedItem {

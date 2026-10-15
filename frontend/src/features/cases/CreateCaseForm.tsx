@@ -16,9 +16,10 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export function CreateCaseForm() {
+/** `defaults` prefill the form, e.g. the title chosen on the register page. */
+export function CreateCaseForm({ defaults = {} }: { defaults?: Record<string, string> }) {
   const [state, action, pending] = useActionState(createCase, initial);
-  const v = state.values ?? {};
+  const v = state.values ?? defaults;
   const err = state.errors;
   const describedBy = (field: keyof typeof err) => (err[field] ? `case-${field}-error` : undefined);
 

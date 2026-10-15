@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api, ApiError } from "@/lib/api";
+import { currentIdentity } from "@/lib/session";
 import type { ReviewStatus } from "@/lib/types";
 
 export interface ReviewState {
@@ -26,7 +27,8 @@ export async function submitReview(_prev: ReviewState, formData: FormData): Prom
   const status = STATUSES.includes(rawStatus as ReviewStatus) ? (rawStatus as ReviewStatus) : undefined;
 
   try {
-    await api.createReview(caseId, { target_id: targetId, note, status });
+    const identity = await currentIdentity();
+    await api.createReview(caseId, { target_id: targetId, note, status, actor: identity?.name });
   } catch (err) {
     return { error: err instanceof ApiError ? err.message : "The API is not reachable." };
   }
