@@ -1,0 +1,133 @@
+.lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lane,
+.ticks {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: var(--gp-space-4);
+  align-items: center;
+}
+
+.label {
+  font-family: var(--gp-mono);
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id {
+  color: var(--gp-text);
+}
+
+.track {
+  position: relative;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--gp-graphite);
+}
+
+.dot,
+.ghost {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.dot {
+  background: var(--state);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 18%, transparent);
+}
+
+.hit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+}
+
+.hit .dot {
+  left: 0 !important;
+}
+
+.hit:focus-visible .dot,
+.hit:hover .dot {
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--state) 35%, transparent);
+}
+
+.supported {
+  --state: var(--gp-state-supported);
+}
+
+.contradicted {
+  --state: var(--gp-state-contradicted);
+}
+
+.inferred {
+  --state: var(--gp-state-inferred);
+}
+
+.unresolved {
+  --state: var(--gp-state-unresolved);
+}
+
+.ghost {
+  border: 2px dashed var(--gp-text-subtle);
+}
+
+.shift {
+  position: absolute;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: color-mix(in srgb, var(--gp-lime) 55%, transparent);
+}
+
+.shiftLabel {
+  position: absolute;
+  top: -18px;
+  transform: translateX(-50%);
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  color: var(--gp-lime);
+  white-space: nowrap;
+}
+
+.band {
+  position: absolute;
+  top: 14px;
+  height: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--gp-state-unresolved) 30%, transparent);
+}
+
+.ticks > div {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  color: var(--gp-text-subtle);
+}
+
+@media (max-width: 640px) {
+  .lane,
+  .ticks {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .ticks {
+    gap: 0;
+  }
+
+  .ticks > span {
+    display: none;
+  }
+}
