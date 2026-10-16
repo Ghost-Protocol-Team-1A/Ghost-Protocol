@@ -98,10 +98,12 @@ export default async function EvidencePage({
                   </tr>
                 </thead>
                 <tbody>
-                  {original.rows.map((row) => {
-                    const eventId = eventRows.get(row.row);
+                  {original.rows.map((row, index) => {
+                    // Seeded logs carry a "row" column; uploaded ones are numbered by position.
+                    const rowNumber = row.row ?? String(index + 1);
+                    const eventId = eventRows.get(rowNumber);
                     return (
-                      <tr key={row.row} className={eventId ? styles.hit : undefined}>
+                      <tr key={rowNumber} className={eventId ? styles.hit : undefined}>
                         {original.columns.map((col) => (
                           <td key={col}>{col === "timestamp" ? row[col]?.slice(11, 19) : row[col]}</td>
                         ))}
