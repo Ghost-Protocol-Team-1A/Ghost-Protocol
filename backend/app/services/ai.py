@@ -19,6 +19,7 @@ import os
 import re
 import zipfile
 from collections.abc import Callable
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -147,6 +148,22 @@ _POINT = _obj({"text": _STR, "cites": _CITES})
 # --- case context ---------------------------------------------------------------------------
 
 
+def _site_tz(incident_start: str) -> timezone:
+    offset = datetime.fromisoformat(incident_start).utcoffset() or timedelta(0)
+    return timezone(offset)
+
+
+def _local(value: str | None, site: timezone) -> str:
+    """A time as HH:MM:SS at the site, so every time the model sees is on one clock."""
+    if not value:
+        return "unknown"
+    return (
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+        .astimezone(site)
+        .strftime("%Y-%m-%d %H:%M:%S")
+    )
+
+
 def case_context(data: CaseData) -> str:
     """The case's records as compact lines the model can cite by ID."""
     c = data.case
@@ -160,11 +177,19 @@ def case_context(data: CaseData) -> str:
     for e in data.evidence:
         clock = f"clock {e.clock.method}, offset {e.clock.offset_seconds}s"
         lines.append(f"{e.id} | {e.type.value} | {e.source_name} | {clock} | {e.extraction_note}")
-    lines += ["", "EVENTS (source time -> normalized UTC)"]
+    site = _site_tz(c.incident_start)
+    lines += [
+        "",
+        "EVENTS",
+        f"Each line: id | where | as the source's own clock recorded it | corrected to the "
+        f"reference clock, in site local time ({site.tzname(None)}) | state | what.",
+        "The corrected time is the source time minus the source's clock offset. Claims and "
+        "questions use site local time.",
+    ]
     for ev in data.events:
         lines.append(
-            f"{ev.id} | {ev.evidence_id} {ev.locator} | {ev.source_time} -> {ev.normalized_time} "
-            f"| {ev.state.value} | {ev.description}"
+            f"{ev.id} | {ev.evidence_id} {ev.locator} | recorded {_local(ev.source_time, site)} "
+            f"| corrected {_local(ev.normalized_time, site)} | {ev.state.value} | {ev.description}"
         )
     lines += ["", "QUESTIONS"] + [f"{q.id} | {q.text}" for q in data.questions]
     lines += ["", "CLAIMS"]

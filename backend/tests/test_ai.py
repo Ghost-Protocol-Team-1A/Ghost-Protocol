@@ -278,3 +278,13 @@ def test_an_organisation_key_can_name_its_workspace(monkeypatch):
     assert client.default_headers["anthropic-workspace-id"] == "wrkspc_demo"
     monkeypatch.delenv("ANTHROPIC_WORKSPACE_ID")
     assert "anthropic-workspace-id" not in ai._default_client().default_headers
+
+
+def test_the_model_sees_every_time_on_the_site_clock(client):
+    from app.services.store import store as live
+
+    context = ai.case_context(live.cases["CASE-001"])
+    line = next(x for x in context.splitlines() if x.startswith("EV-014 "))
+    assert "recorded 2026-10-10 21:16:00" in line
+    assert "corrected 2026-10-10 21:14:00" in line
+    assert "(UTC+01:00)" in context
