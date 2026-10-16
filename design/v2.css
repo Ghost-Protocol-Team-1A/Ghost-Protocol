@@ -1,0 +1,48 @@
+/* Ghost Protocol v2 design source for the Figma frames (section "v2 · Black + Lime").
+   Two brand colors: Ink #0A0B0D and Signal Lime #B8F54A. State colors appear only inside data. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #050607; font-family: Inter, "Helvetica Neue", Arial, sans-serif; color: #F2F4F7; padding: 40px; display: flex; flex-direction: column; gap: 80px; align-items: flex-start; }
+.frame { width: 1440px; background: #0A0B0D; color: #F2F4F7; position: relative; overflow: hidden; }
+.mono { font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; }
+.lime { color: #B8F54A; } .muted { color: #9BA3AF; } .dim { color: #6B7280; }
+.eyebrow { font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #B8F54A; }
+h1 { font-size: 56px; line-height: 1.04; letter-spacing: -0.03em; font-weight: 700; }
+h2 { font-size: 40px; line-height: 1.1; letter-spacing: -0.025em; font-weight: 650; }
+h3 { font-size: 22px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 600; }
+p { font-size: 17px; line-height: 1.6; } .small { font-size: 14px; line-height: 1.5; } .xs { font-size: 12px; line-height: 1.4; }
+.btn { display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 22px; border-radius: 999px; font-size: 15px; font-weight: 600; }
+.btn-lime { background: #B8F54A; color: #0A0B0D; } .btn-ghost { border: 1px solid #2A2E35; color: #F2F4F7; }
+.card { background: #111317; border: 1px solid #22262C; border-radius: 20px; padding: 28px; }
+.chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-family: "JetBrains Mono", monospace; }
+.chip-line { border: 1px solid #2A2E35; color: #C9CED6; }
+.b-sup { background: rgba(184,245,74,0.12); color: #B8F54A; } .b-con { background: rgba(255,107,94,0.14); color: #FF6B5E; }
+.b-inf { background: rgba(125,180,255,0.14); color: #7DB4FF; } .b-unr { background: rgba(245,185,79,0.14); color: #F5B94F; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; } .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.logo { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 15px; letter-spacing: 0.16em; white-space: nowrap; }
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 900px; }
+.side { border-right: 1px solid #16191E; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+.side .item { height: 40px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; font-size: 14px; color: #9BA3AF; }
+.side .item.on { background: #15181C; color: #F2F4F7; box-shadow: inset 2px 0 0 #B8F54A; }
+.side .item .n { font-family: "JetBrains Mono", monospace; font-size: 11px; width: 18px; color: #6B7280; }
+.side .group { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.14em; color: #6B7280; padding: 20px 12px 8px; }
+.side .sub { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #6B7280; padding: 0 12px 4px; }
+.top { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; border-bottom: 1px solid #16191E; }
+.search { width: 420px; height: 38px; border-radius: 10px; background: #111317; border: 1px solid #22262C; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 13px; color: #6B7280; }
+.kbd { font-family: "JetBrains Mono", monospace; font-size: 11px; border: 1px solid #2A2E35; border-radius: 6px; padding: 2px 6px; color: #9BA3AF; }
+.main { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th { text-align: left; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.12em; color: #6B7280; font-weight: 500; padding: 10px 12px; border-bottom: 1px solid #1E2228; text-transform: uppercase; }
+.table td { padding: 10px 12px; border-bottom: 1px solid #16191E; }
+.input { height: 46px; border-radius: 12px; background: #0E1013; border: 1px solid #262A31; padding: 0 16px; display: flex; align-items: center; font-size: 15px; color: #9BA3AF; }
+.ai { border: 1px solid #2A2E35; border-left: 3px solid #7DB4FF; }
+.tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .06em; padding: 3px 8px; border-radius: 6px; }
+/* charts: state fills validated for the dark chart surface (see design/README.md) */
+.kpi { display: flex; flex-direction: column; gap: 4px; } .kpi .v { font-family: "JetBrains Mono", monospace; font-size: 34px; font-weight: 600; }
+.flt { display: flex; gap: 10px; align-items: center; }
+.flt .sel { height: 36px; border-radius: 10px; border: 1px solid #262A31; background: #0E1013; padding: 0 12px; display: flex; align-items: center; font-size: 13px; color: #C9CED6; }
+.bar { display: flex; height: 22px; gap: 2px; }
+.bar span { display: flex; align-items: center; padding-left: 6px; font-size: 11px; font-family: "JetBrains Mono", monospace; color: #F2F4F7; font-weight: 600; border-radius: 3px; }
+.tex { background-image: repeating-linear-gradient(45deg, rgba(10,11,13,.45) 0 2px, transparent 2px 6px); }
+.ax { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #6B7280; }
+.lg { display: flex; gap: 16px; font-size: 12px; color: #C9CED6; } .lg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+svg { flex: none; display: block; }
