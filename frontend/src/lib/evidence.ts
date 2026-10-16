@@ -13,11 +13,13 @@ export function rowsWithEvents(events: TimelineEvent[], evidenceId: string): Map
 const CLOCK_METHODS: Record<string, string> = {
   declared_in_fixture_metadata: "declared demo assumption",
   inferred_from_anchors: "inferred from anchors",
+  declared_by_investigator: "declared by an investigator",
 };
 
 /** Plain-language description of a source clock assumption. */
 export function clockLabel(clock: EvidenceItem["clock"]): string {
   const s = clock.offset_seconds;
+  if (clock.method === "not_set") return "Not verified · device clock taken as recorded";
   if (s === 0) {
     return clock.method === "approximate_human_estimate"
       ? "Approximate human estimate"
@@ -29,7 +31,12 @@ export function clockLabel(clock: EvidenceItem["clock"]): string {
 }
 
 /** How an item's events were (or were not) produced. */
-export function extractionLabel(item: Pick<EvidenceItem, "processing_status" | "simulated" | "type">): string {
+export function extractionLabel(
+  item: Pick<EvidenceItem, "processing_status" | "simulated" | "type"> & { extraction_method?: string },
+): string {
+  if (item.extraction_method === "manual_observation") return "Observations logged by investigators";
+  if (item.extraction_method === "ai_suggested_human_accepted") return "AI-suggested, accepted by a person";
+  if (item.extraction_method === "deterministic_log_parser") return "Deterministic log parser";
   if (item.processing_status === "queued") return "Not run yet · stored and hashed on upload";
   if (item.simulated) return "Simulated from seed metadata";
   return item.type === "csv" ? "Deterministic CSV parser" : "Deterministic parser";
