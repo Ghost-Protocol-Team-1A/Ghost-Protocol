@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import os
 import re
 import zipfile
@@ -27,6 +28,8 @@ import anthropic
 from app.errors import ApiError
 from app.models.domain import EvidenceItem, EvidenceType
 from app.services.store import CaseData
+
+log = logging.getLogger("ghost_protocol.ai")
 
 MODEL = "claude-sonnet-5-5"
 _BETAS = ["server-side-fallback-2026-07-01"]
@@ -67,21 +70,36 @@ def _default_client() -> Any:
 client_factory: Callable[[], Any] = _default_client
 
 
+def _create(client: Any, plain: bool, **params: Any) -> Any:
+    """The beta call with server-side refusal fallback, or the plain call without it."""
+    if plain:
+        return client.messages.create(**params)
+    return client.beta.messages.create(betas=_BETAS, fallbacks="default", **params)
+
+
 def _call(
     system: str, content: list[dict], schema: dict, effort: str = "medium"
 ) -> tuple[dict, str]:
-    """One structured request. Returns (parsed JSON, model that answered)."""
+    """One structured request. Returns (parsed JSON, model that answered).
+
+    The first attempt asks for server-side refusal fallback. If the API rejects that request
+    shape (400), it is retried once as a plain structured request, and Anthropic's own reason
+    is logged so a misconfiguration explains itself.
+    """
     client = client_factory()
+    params = {
+        "model": MODEL,
+        "max_tokens": 16000,
+        "system": system,
+        "messages": [{"role": "user", "content": content}],
+        "output_config": {"effort": effort, "format": {"type": "json_schema", "schema": schema}},
+    }
     try:
-        response = client.beta.messages.create(
-            model=MODEL,
-            max_tokens=16000,
-            betas=_BETAS,
-            fallbacks="default",
-            system=system,
-            messages=[{"role": "user", "content": content}],
-            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
-        )
+        try:
+            response = _create(client, False, **params)
+        except anthropic.BadRequestError as exc:
+            log.warning("AI request with fallback rejected (400): %s; retrying plain", exc.message)
+            response = _create(client, True, **params)
     except anthropic.AuthenticationError as exc:
         raise ApiError(
             503, "ai_not_configured", "The AI key was rejected. Check ANTHROPIC_API_KEY."
@@ -91,8 +109,11 @@ def _call(
     except anthropic.APIConnectionError as exc:
         raise ApiError(503, "ai_unreachable", "The AI service could not be reached.") from exc
     except anthropic.APIStatusError as exc:
+        log.warning("AI request failed (%s): %s", exc.status_code, exc.message)
         raise ApiError(
-            502, "ai_error", f"The AI service returned an error ({exc.status_code})."
+            502,
+            "ai_error",
+            f"The AI service returned an error ({exc.status_code}): {exc.message[:300]}",
         ) from exc
 
     if response.stop_reason == "refusal":

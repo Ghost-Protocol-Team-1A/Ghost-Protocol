@@ -8,6 +8,8 @@ import json
 import zipfile
 from types import SimpleNamespace
 
+import anthropic
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -19,9 +21,22 @@ BASE = "/api/cases/CASE-001"
 
 
 class FakeClaude:
-    def __init__(self, payload, stop_reason="end_turn"):
+    def __init__(self, payload, stop_reason="end_turn", reject_beta=False):
         self.payload, self.stop_reason, self.calls = payload, stop_reason, []
-        self.beta = SimpleNamespace(messages=SimpleNamespace(create=self._create))
+        self.reject_beta = reject_beta
+        self.beta = SimpleNamespace(messages=SimpleNamespace(create=self._beta_create))
+        self.messages = SimpleNamespace(create=self._create)
+
+    def _beta_create(self, **kwargs):
+        if self.reject_beta:
+            self.calls.append({"rejected": True, **kwargs})
+            request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+            raise anthropic.BadRequestError(
+                "fallbacks: not available for this organization",
+                response=httpx.Response(400, request=request),
+                body=None,
+            )
+        return self._create(**kwargs)
 
     def _create(self, **kwargs):
         self.calls.append(kwargs)
@@ -241,3 +256,16 @@ def test_drafts_are_for_existing_questions_and_keep_only_real_citations(client, 
     assert client.post(f"{BASE}/conclusion-draft", json={"question_id": "Q-09"}).status_code == 404
     draft = client.post(f"{BASE}/conclusion-draft", json={"question_id": "Q-03"}).json()
     assert draft["cites"] == ["CL-06"] and draft["removed"] == 1
+
+
+def test_a_rejected_request_shape_is_retried_without_fallback(client, monkeypatch):
+    fake = use_fake(
+        monkeypatch,
+        {"can_answer": True, "answer": "At 21:14.", "cites": ["EV-014"]},
+        reject_beta=True,
+    )
+    res = client.post(f"{BASE}/ask", json={"question": "When did the trolley pass?"})
+    assert res.status_code == 200 and res.json()["cites"] == ["EV-014"]
+    assert fake.calls[0]["rejected"] is True and "fallbacks" in fake.calls[0]
+    assert "fallbacks" not in fake.calls[1] and "betas" not in fake.calls[1]
+    assert fake.calls[1]["output_config"]["format"]["type"] == "json_schema"
