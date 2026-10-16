@@ -1,10 +1,13 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import ROUTERS
 from app.errors import install_error_handlers
+from app.services.store import store
+
+_WRITES = {"POST", "PUT", "PATCH", "DELETE"}
 
 
 def create_app() -> FastAPI:
@@ -18,6 +21,15 @@ def create_app() -> FastAPI:
         CORSMiddleware, allow_origins=origins, allow_methods=["*"], allow_headers=["*"]
     )
     install_error_handlers(app)
+
+    @app.middleware("http")
+    async def save_after_writes(request: Request, call_next):
+        """Persist investigators' cases after every successful change, so restarts lose nothing."""
+        response = await call_next(request)
+        if request.method in _WRITES and response.status_code < 400:
+            store.save()
+        return response
+
     for router in ROUTERS:
         app.include_router(router)
     return app
