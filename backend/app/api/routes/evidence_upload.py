@@ -139,6 +139,9 @@ def upload_evidence(case_id: str, file: UploadFile, response: Response) -> Evide
     path = stored_path(digest)
     if not path.exists():
         _store_bytes(stream, path)
+    if not data.seed_name:
+        # Keep the original beyond this container's disk, so it survives a restart.
+        store.backend.save_blob(digest, path.read_bytes())
 
     item = EvidenceItem(
         id=_next_evidence_id(data),

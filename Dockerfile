@@ -36,6 +36,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
     NEXT_TELEMETRY_DISABLED=1 \
     API_URL=http://127.0.0.1:8000 \
     GP_STORAGE_DIR=/app/data/evidence \
+    GP_DATA_DIR=/app/data/state \
     GP_CORS_ORIGINS=http://127.0.0.1 \
     PORT=10000
 

@@ -7,7 +7,11 @@ state. A database-backed store can replace this behind the same methods.
 from __future__ import annotations
 
 import csv
+import json
+import logging
+from collections.abc import Callable
 from datetime import UTC, datetime
+from pathlib import Path
 
 from app.models.domain import (
     AuditEvent,
@@ -32,7 +36,11 @@ from app.models.domain import (
 )
 from app.services.ingest import load_seed, load_staged, staged_ids
 from app.services.normalize import normalize
+from app.services.persist import Backend, NullBackend, dumps, make_backend
 from app.services.rules import RULES, apply_findings_to_events
+from app.storage.hashing import stored_path
+
+log = logging.getLogger("ghost_protocol.store")
 
 
 def clock_suffix(item: EvidenceItem) -> str:
@@ -297,6 +305,59 @@ class CaseData:
             rows = list(reader)
             return path.name, list(reader.fieldnames or []), rows
 
+    # --- persistence --------------------------------------------------------------------------
+
+    def snapshot(self) -> dict:
+        """Everything needed to rebuild this case. Conflicts are re-derived, not stored."""
+        dump = lambda items: [i.model_dump(mode="json") for i in items]  # noqa: E731
+        return {
+            "version": 1,
+            "case": self.case.model_dump(mode="json"),
+            "evidence": dump(self.evidence),
+            "events": dump(self.events),
+            "claims": dump(self.claims),
+            "hypotheses": dump(self.hypotheses),
+            "audit": dump(self.audit),
+            "questions": dump(self.questions),
+            "conclusions": dump(self.conclusions),
+            "suggestions": dump(self.suggestions),
+            "briefings": dump(self.briefings),
+            "changes": dump(self.changes),
+            "conflict_reviews": {k: dump(v) for k, v in self.conflict_reviews.items()},
+            "base_states": {k: v.value for k, v in self.base_states.items()},
+            "authoritative_for": self.authoritative_for,
+            "csv_files": sorted(self.files),
+        }
+
+    @classmethod
+    def restore(cls, doc: dict, file_for: Callable[[EvidenceItem], Path | None]) -> CaseData:
+        """Rebuild a saved case and re-run the rules, so conflicts match the current engine."""
+        data = cls.__new__(cls)
+        data.seed_name = ""
+        data.case = Case(**doc["case"])
+        data.evidence = [EvidenceItem(**e) for e in doc["evidence"]]
+        data.claims = [Claim(**c) for c in doc["claims"]]
+        data.hypotheses = [Hypothesis(**h) for h in doc["hypotheses"]]
+        data.audit = [AuditEvent(**a) for a in doc["audit"]]
+        data.questions = [Question(**q) for q in doc["questions"]]
+        data.conclusions = [Conclusion(**c) for c in doc["conclusions"]]
+        data.suggestions = [Suggestion(**x) for x in doc["suggestions"]]
+        data.briefings = [Briefing(**b) for b in doc["briefings"]]
+        data.changes = [ChangeSummary(**c) for c in doc["changes"]]
+        data.conflict_reviews = {
+            k: [ReviewNote(**n) for n in v] for k, v in doc["conflict_reviews"].items()
+        }
+        data.base_states = {k: ClaimState(v) for k, v in doc["base_states"].items()}
+        data.authoritative_for = doc.get("authoritative_for", {})
+        data.files = {}
+        for item in data.evidence:
+            path = file_for(item)
+            if path is not None and item.id in doc.get("csv_files", []):
+                data.files[item.id] = path
+        data.events, data.conflicts = [], []
+        data._analyze([Event(**e) for e in doc["events"]])
+        return data
+
     def summary(self) -> CaseSummary:
         return CaseSummary(
             case=self.case,
@@ -309,13 +370,66 @@ class CaseData:
 class Store:
     def __init__(self) -> None:
         self.cases: dict[str, CaseData] = {}
+        self.backend: Backend = NullBackend()
+        self._saved: dict[str, str] = {}
         self.reset()
 
     def reset(self) -> None:
+        """Start from the seeds plus every saved case (startup, and a clean slate in tests)."""
+        self.backend = make_backend()
+        self._saved = {}
         self.cases = {}
         for name in SEEDS:
             data = CaseData(name)
             self.cases[data.case.id] = data
+        for case_id, document in self.backend.load_cases().items():
+            if case_id in self.cases:
+                continue  # a seed id: the seed wins
+            try:
+                self.cases[case_id] = CaseData.restore(json.loads(document), self._original)
+                self._saved[case_id] = document
+            except Exception:  # noqa: BLE001 - one bad document must not lose the others
+                log.exception("Could not restore %s", case_id)
+
+    def reset_demo(self) -> list[str]:
+        """Rebuild the seeded demo cases only. Investigators' own cases are untouched."""
+        reset = []
+        for name in SEEDS:
+            data = CaseData(name)
+            self.cases[data.case.id] = data
+            reset.append(data.case.id)
+        return reset
+
+    def _original(self, item: EvidenceItem) -> Path | None:
+        """The stored original for an item, fetched back from the backend if the disk lost it."""
+        if not item.sha256:
+            return None
+        path = stored_path(item.sha256)
+        if not path.exists():
+            blob = self.backend.load_blob(item.sha256)
+            if blob is None:
+                return None
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(blob)
+        return path
+
+    def save(self) -> list[str]:
+        """Save every investigator case that changed since it was last saved."""
+        written = []
+        seeds = {d.case.id for d in self.cases.values() if d.seed_name}
+        for case_id, data in self.cases.items():
+            if case_id in seeds:
+                continue
+            document = dumps(data.snapshot())
+            if self._saved.get(case_id) == document:
+                continue
+            try:
+                self.backend.save_case(case_id, document)
+                self._saved[case_id] = document
+                written.append(case_id)
+            except Exception:  # noqa: BLE001 - a storage hiccup must not fail the request
+                log.exception("Could not save %s", case_id)
+        return written
 
     def create_case(
         self,
