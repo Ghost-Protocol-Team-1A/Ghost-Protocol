@@ -1,4 +1,5 @@
 from app.api.routes import (
+    ai,
     cases,
     demo,
     evidence_upload,
@@ -18,4 +19,5 @@ ROUTERS = [
     report.router,
     workbench.router,
     findings.router,
+    ai.router,
 ]
