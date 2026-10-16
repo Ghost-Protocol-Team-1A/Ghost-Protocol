@@ -77,7 +77,7 @@ export default async function CasesPage({
             {shown.map(({ case: c, evidence_count, open_conflicts }) => (
               <tr key={c.id}>
                 <td>
-                  <Link href={`/cases/${c.id}/${evidence_count ? "timeline" : "evidence"}`}>{c.id}</Link>
+                  <Link href={`/cases/${c.id}`}>{c.id}</Link>
                 </td>
                 <td>
                   {c.title}
