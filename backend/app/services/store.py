@@ -16,11 +16,13 @@ from app.models.domain import (
     ChangeSummary,
     Claim,
     ClaimState,
+    Conclusion,
     Conflict,
     DataClassification,
     Event,
     EvidenceItem,
     Hypothesis,
+    Question,
     ReviewCreate,
     ReviewNote,
     ReviewStatus,
@@ -55,6 +57,8 @@ class CaseData:
         self.claims: list[Claim] = seed.claims
         self.hypotheses: list[Hypothesis] = seed.hypotheses
         self.audit: list[AuditEvent] = seed.audit
+        self.questions: list[Question] = seed.questions
+        self.conclusions: list[Conclusion] = []
         self.files = seed.files
         self.authoritative_for = seed.authoritative_for
         self.changes: list[ChangeSummary] = []
@@ -71,6 +75,7 @@ class CaseData:
         data.seed_name = ""
         data.case = case
         data.evidence, data.claims, data.hypotheses = [], [], []
+        data.questions, data.conclusions = [], []
         data.files, data.authoritative_for, data.changes = {}, {}, []
         data.conflict_reviews = {}
         data.events, data.conflicts = [], []
