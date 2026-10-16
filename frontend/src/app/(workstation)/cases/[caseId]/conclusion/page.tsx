@@ -1,7 +1,6 @@
 import Link from "next/link";
 import panel from "@/components/panel.module.css";
 import { ConclusionForm } from "@/features/workbench/Forms";
-import { Stepper } from "@/features/workbench/Stepper";
 import w from "@/features/workbench/workbench.module.css";
 import { api, ApiError } from "@/lib/api";
 import { currentIdentity } from "@/lib/session";
@@ -17,7 +16,6 @@ export default async function ConclusionPage({ params }: { params: Promise<{ cas
   let data;
   try {
     data = await Promise.all([
-      api.journey(caseId),
       api.questions(caseId),
       api.claims(caseId),
       api.conflicts(caseId),
@@ -32,7 +30,7 @@ export default async function ConclusionPage({ params }: { params: Promise<{ cas
       </p>
     );
   }
-  const [journey, questions, claims, conflicts, conclusions, ai] = data;
+  const [questions, claims, conflicts, conclusions, ai] = data;
   const identity = await currentIdentity();
   const open = conflicts.filter((c) => c.status === "open");
   const latest = conclusions.at(-1);
@@ -47,7 +45,6 @@ export default async function ConclusionPage({ params }: { params: Promise<{ cas
           yours. Signing again creates a new version; earlier ones stay on record.
         </p>
       </div>
-      <Stepper journey={journey} />
 
       {latest && (
         <div className={panel.panel} style={{ borderColor: "var(--gp-lime)" }}>

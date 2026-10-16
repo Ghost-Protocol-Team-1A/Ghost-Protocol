@@ -1,0 +1,131 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gp-space-3) var(--gp-space-4);
+  margin: calc(-1 * var(--gp-space-6)) 0 var(--gp-space-6);
+  padding: var(--gp-space-3) 0 var(--gp-space-4);
+  border-bottom: 1px solid var(--gp-hairline);
+}
+
+.pills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gp-space-2);
+}
+
+.id a {
+  margin-right: 4px;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-subtle);
+  text-decoration: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border-radius: var(--gp-radius-pill);
+  border: 1px solid var(--gp-border);
+  background: var(--gp-surface);
+  color: var(--gp-text);
+  font-size: var(--gp-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pill:hover {
+  border-color: var(--gp-text-subtle);
+}
+
+.num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gp-border);
+  color: var(--gp-text-muted);
+  font-family: var(--gp-mono);
+  font-size: 11px;
+}
+
+.done .num {
+  background: var(--gp-lime);
+  border-color: var(--gp-lime);
+  color: var(--gp-ink);
+}
+
+.now {
+  border-color: var(--gp-lime);
+  box-shadow: 0 0 0 3px var(--gp-lime-soft);
+}
+
+.now .num {
+  border-color: var(--gp-lime);
+  color: var(--gp-lime);
+}
+
+.next {
+  display: flex;
+  align-items: center;
+  gap: var(--gp-space-3);
+}
+
+.next :global(.gp-btn) {
+  height: 38px;
+}
+
+.detail {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+}
+
+.here {
+  padding: 6px 12px;
+  border-radius: var(--gp-radius-pill);
+  background: var(--gp-lime-soft);
+  color: var(--gp-lime);
+  font-size: var(--gp-text-sm);
+  font-weight: 600;
+}
+
+.flow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gp-space-4);
+  margin-top: var(--gp-space-8);
+  padding-top: var(--gp-space-5, 20px);
+  border-top: 1px solid var(--gp-hairline);
+}
+
+.prev {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+  text-decoration: none;
+}
+
+.prev:hover {
+  color: var(--gp-text);
+}
+
+@media (max-width: 900px) {
+  .bar {
+    margin-top: 0;
+  }
+
+  .pill {
+    font-size: var(--gp-text-xs);
+  }
+
+  .detail {
+    display: none;
+  }
+}

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import panel from "@/components/panel.module.css";
 import { AiReadButton, ObservationForm, SuggestionCard } from "@/features/workbench/Forms";
-import { Stepper } from "@/features/workbench/Stepper";
 import w from "@/features/workbench/workbench.module.css";
 import { api, ApiError, localTime } from "@/lib/api";
 import type { EvidenceItem } from "@/lib/types";
@@ -30,7 +29,6 @@ export default async function ExtractPage({
   try {
     data = await Promise.all([
       api.case(caseId),
-      api.journey(caseId),
       api.evidence(caseId),
       api.timeline(caseId),
       api.suggestions(caseId),
@@ -44,7 +42,7 @@ export default async function ExtractPage({
       </p>
     );
   }
-  const [summary, journey, evidence, events, suggestions, ai] = data;
+  const [summary, evidence, events, suggestions, ai] = data;
   const count = (id: string) => events.filter((x) => x.evidence_id === id).length;
   const pendingFor = (id: string) => suggestions.filter((s) => s.evidence_id === id && s.status === "pending").length;
   const firstNeeding = evidence.find((x) => pendingFor(x.id) || (!x.simulated && count(x.id) === 0));
@@ -54,8 +52,7 @@ export default async function ExtractPage({
     return (
       <section style={{ display: "flex", flexDirection: "column", gap: "var(--gp-space-6)" }}>
         <h1 className={panel.pageTitle}>Turn evidence into events</h1>
-        <Stepper journey={journey} />
-        <p className={w.muted}>
+          <p className={w.muted}>
           No evidence yet. <Link href={`/cases/${caseId}/intake`}>Upload the first file →</Link>
         </p>
       </section>
@@ -75,7 +72,6 @@ export default async function ExtractPage({
           AI, but nothing reaches the timeline until you accept it.
         </p>
       </div>
-      <Stepper journey={journey} />
 
       <div className={w.sidepanel}>
         <nav aria-label="Evidence" className={panel.panel} style={{ padding: 8 }}>
