@@ -225,6 +225,15 @@ def _extract_log(data: CaseData, item: EvidenceItem, path: Path) -> ChangeSummar
     return data.add_events(item, events, store.now(), trigger)
 
 
+def original_path(data: CaseData, item: EvidenceItem) -> Path | None:
+    """Where an item's original bytes are on disk, or None when there is no file."""
+    path = data.files.get(item.id)
+    if path is None and item.sha256:
+        candidate = stored_path(item.sha256)
+        path = candidate if candidate.exists() else None
+    return path
+
+
 @router.get("/cases/{case_id}/evidence/{evidence_id}/file")
 def read_evidence_file(case_id: str, evidence_id: str) -> FileResponse:
     """Stream the original bytes of an evidence item, with Range support for audio and video.
@@ -236,10 +245,7 @@ def read_evidence_file(case_id: str, evidence_id: str) -> FileResponse:
     item = next((e for e in data.evidence if e.id == evidence_id), None)
     if item is None:
         raise not_found("evidence", evidence_id)
-    path = data.files.get(evidence_id)
-    if path is None and item.sha256:
-        candidate = stored_path(item.sha256)
-        path = candidate if candidate.exists() else None
+    path = original_path(data, item)
     if path is None:
         raise ApiError(
             404,
