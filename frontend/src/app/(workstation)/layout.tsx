@@ -5,15 +5,19 @@ import { CommandPalette } from "@/features/palette/CommandPalette";
 import { Sidebar } from "@/features/shell/Sidebar";
 import { TourCard } from "@/features/tour/TourCard";
 import shell from "@/features/shell/shell.module.css";
+import { api } from "@/lib/api";
 import { initials, ROLE_LABELS } from "@/lib/identity";
 import { currentIdentity } from "@/lib/session";
 import styles from "./workstation.module.css";
 
 export default async function WorkstationLayout({ children }: { children: React.ReactNode }) {
   const identity = await currentIdentity();
+  const titles = Object.fromEntries(
+    (await api.cases().catch(() => [])).map((c) => [c.case.id, c.case.title]),
+  );
   return (
     <div className={styles.shell}>
-      <Sidebar />
+      <Sidebar titles={titles} />
       <header className={shell.topbar}>
         <div className={shell.topLeft}>
           <CommandPalette />

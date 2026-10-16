@@ -83,20 +83,39 @@
 }
 
 .caseCard {
-  padding: var(--gp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--gp-space-4) 0 var(--gp-space-1);
+  padding: var(--gp-space-3) var(--gp-space-4);
   border: 1px solid var(--gp-border);
-  border-radius: var(--gp-radius-lg);
+  border-radius: 14px;
   background: var(--gp-surface);
   font-size: var(--gp-text-sm);
+  color: var(--gp-text);
+  text-decoration: none;
 }
 
-.caseCard p {
-  margin: 0;
+.caseCard:hover {
+  border-color: var(--gp-lime);
 }
 
-.caseCard p:first-child {
+.caseCard .gp-mono,
+.caseCard :global(.gp-mono) {
   color: var(--gp-lime);
   font-size: var(--gp-text-xs);
+}
+
+.caseTitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .muted {
@@ -183,8 +202,17 @@
     display: inline;
   }
 
-  .caseCard {
+  .navGroup {
+    display: contents;
+  }
+
+  .group {
     display: none;
+  }
+
+  .caseCard {
+    flex-basis: 100%;
+    margin: var(--gp-space-2) 0;
   }
 
   .topbar {
