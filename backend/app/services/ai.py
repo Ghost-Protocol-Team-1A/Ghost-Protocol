@@ -63,7 +63,10 @@ def _default_client() -> Any:
             "ai_not_configured",
             "AI assistance is off: add ANTHROPIC_API_KEY to the server environment to turn it on.",
         )
-    return anthropic.Anthropic(timeout=120.0, max_retries=2)
+    # An organisation-level key must name the workspace it spends from; a workspace key need not.
+    workspace = os.getenv("ANTHROPIC_WORKSPACE_ID", "").strip()
+    headers = {"anthropic-workspace-id": workspace} if workspace else None
+    return anthropic.Anthropic(timeout=120.0, max_retries=2, default_headers=headers)
 
 
 # Tests replace this with a fake client.

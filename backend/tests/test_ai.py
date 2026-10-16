@@ -269,3 +269,12 @@ def test_a_rejected_request_shape_is_retried_without_fallback(client, monkeypatc
     assert fake.calls[0]["rejected"] is True and "fallbacks" in fake.calls[0]
     assert "fallbacks" not in fake.calls[1] and "betas" not in fake.calls[1]
     assert fake.calls[1]["output_config"]["format"]["type"] == "json_schema"
+
+
+def test_an_organisation_key_can_name_its_workspace(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-real")
+    monkeypatch.setenv("ANTHROPIC_WORKSPACE_ID", "wrkspc_demo")
+    client = ai._default_client()
+    assert client.default_headers["anthropic-workspace-id"] == "wrkspc_demo"
+    monkeypatch.delenv("ANTHROPIC_WORKSPACE_ID")
+    assert "anthropic-workspace-id" not in ai._default_client().default_headers
