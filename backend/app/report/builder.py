@@ -73,8 +73,7 @@ def _window(case: Case, offset_minutes: int) -> str:
     zone = start.strftime("%z")
     zone = f"{zone[:3]}:{zone[3:]}" if zone else "UTC"
     return (
-        f"{start.strftime('%Y-%m-%d %H:%M:%S')} – {end.strftime('%H:%M:%S')} "
-        f"site time (UTC{zone})"
+        f"{start.strftime('%Y-%m-%d %H:%M:%S')} – {end.strftime('%H:%M:%S')} site time (UTC{zone})"
     )
 
 
@@ -232,6 +231,59 @@ def _claims_section(data: CaseData) -> dict:
     }
 
 
+_FINDING_LABELS = {
+    "established": "Established",
+    "partly_established": "Partly established",
+    "not_established": "Not established",
+}
+
+
+def _questions_section(data: CaseData) -> dict:
+    """Each question with the claims that bear on it and, once signed, its finding."""
+    signed = data.conclusions[-1] if data.conclusions else None
+    answers = {a.question_id: a for a in signed.answers} if signed else {}
+    items = []
+    for question in data.questions:
+        claims = [c for c in data.claims if c.question_id == question.id]
+        answer = answers.get(question.id)
+        items.append(
+            {
+                "id": question.id,
+                "question": question.text,
+                "claims": [f"{c.id} ({c.state.value}) {c.statement}" for c in claims]
+                or ["No claim yet"],
+                "finding": _FINDING_LABELS[answer.finding.value] if answer else "Not answered",
+                "answer": answer.text if answer else "—",
+                "cites": answer.cites if answer else [],
+            }
+        )
+    return {"id": "findings", "title": "Questions and findings", "type": "items", "items": items}
+
+
+def _signoff_section(data: CaseData) -> dict:
+    signed = data.conclusions[-1] if data.conclusions else None
+    if signed is None:
+        facts = [
+            {"label": "Status", "value": "Not signed. This report is a working draft."},
+        ]
+    else:
+        facts = [
+            {"label": "Signed by", "value": f"{signed.signed_by} ({signed.role})"},
+            {"label": "Signed at", "value": signed.signed_at},
+            {
+                "label": "Version",
+                "value": f"{signed.version}"
+                + (f", supersedes {signed.supersedes}" if signed.supersedes else ""),
+            },
+            {
+                "label": "Attested",
+                "value": "Every cited source and open conflict was reviewed; "
+                "unresolved points are stated as unresolved.",
+            },
+        ]
+    return {"id": "signoff", "title": "Sign-off", "type": "facts", "facts": facts}
+
+
 def build_report(data: CaseData, generated_at: str | None = None) -> dict:
     """Build the full report structure for a case.
 
@@ -254,5 +306,7 @@ def build_report(data: CaseData, generated_at: str | None = None) -> dict:
             _unresolved_section(data),
             _methods_section(),
             _claims_section(data),
+            _questions_section(data),
+            _signoff_section(data),
         ],
     }

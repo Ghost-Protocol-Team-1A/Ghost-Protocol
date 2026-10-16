@@ -17,6 +17,10 @@ _FIELD_LABELS = {
     "statement": "Statement",
     "rationale": "Rationale",
     "citations": "Citations",
+    "claims": "Claims",
+    "finding": "Finding",
+    "answer": "Answer",
+    "cites": "Cites",
 }
 
 
