@@ -25,6 +25,7 @@ from app.models.domain import (
     ExtractionMethod,
     Hypothesis,
     ProcessingStatus,
+    Question,
 )
 from app.services.normalize import normalize
 from app.services.offsets import INFER_METHOD, INFERRED_METHOD, describe, infer_offset
@@ -41,6 +42,7 @@ class SeedCase:
     claims: list[Claim]
     hypotheses: list[Hypothesis]
     audit: list[AuditEvent]
+    questions: list[Question] = field(default_factory=list)
     authoritative_for: dict[str, list[str]] = field(default_factory=dict)
     files: dict[str, Path] = field(default_factory=dict)
 
@@ -258,6 +260,16 @@ def load_seed(name: str = "case_001") -> SeedCase:
     audit = [
         AuditEvent(id=f"A-{i:03d}", case_id=case.id, **a) for i, a in enumerate(data["audit"], 1)
     ]
+    questions = [Question(case_id=case.id, **q) for q in data.get("questions", [])]
     return SeedCase(
-        case, subject_asset, evidence, events, claims, hypotheses, audit, authoritative, files
+        case,
+        subject_asset,
+        evidence,
+        events,
+        claims,
+        hypotheses,
+        audit,
+        questions,
+        authoritative,
+        files,
     )

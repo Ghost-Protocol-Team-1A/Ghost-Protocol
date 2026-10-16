@@ -123,9 +123,15 @@
       "approximate_seconds": 120
     }
   ],
+  "questions": [
+    {"id": "Q-01", "text": "In what order were the recorded events between 21:00 and 22:00?", "created_by": "BJ", "created_at": "2026-10-11T09:05:00Z"},
+    {"id": "Q-02", "text": "Did the 21:16 alarm come from the loading-bay door?", "created_by": "BJ", "created_at": "2026-10-11T09:05:30Z"},
+    {"id": "Q-03", "text": "Was EQ-4471 taken out on the trolley, and can the evidence say by whom?", "created_by": "BJ", "created_at": "2026-10-11T09:06:00Z"}
+  ],
   "claims": [
     {
       "id": "CL-01",
+      "question_id": "Q-01",
       "statement": "The loading-bay door opened at 21:12:00",
       "state": "supported",
       "rationale": "Recorded directly in the access log; no cited source conflicts.",
@@ -133,6 +139,7 @@
     },
     {
       "id": "CL-02",
+      "question_id": "Q-01",
       "statement": "A trolley moved through the bay at 21:14:00",
       "state": "supported",
       "rationale": "Recorded on E-02; time normalized for the 120 s clock offset inferred from two anchors.",
@@ -140,6 +147,7 @@
     },
     {
       "id": "CL-03",
+      "question_id": "Q-02",
       "statement": "The 21:16 alarm came from the loading-bay door",
       "state": "inferred",
       "rationale": "The alarm audio does not name the door; the link relies on E-03 and E-04 together.",
@@ -150,6 +158,7 @@
     },
     {
       "id": "CL-04",
+      "question_id": "Q-03",
       "kind": "identity",
       "statement": "The person in E-01 is the holder of badge B-117",
       "state": "unresolved",
@@ -158,6 +167,7 @@
     },
     {
       "id": "CL-05",
+      "question_id": "Q-01",
       "statement": "A separate door event happened at 21:09:00",
       "state": "contradicted",
       "rationale": "Only the copied row in E-05 records it; the original access log and entrance camera conflict.",
@@ -169,6 +179,7 @@
     },
     {
       "id": "CL-06",
+      "question_id": "Q-03",
       "statement": "EQ-4471 was on the trolley",
       "state": "unresolved",
       "rationale": "The object on the trolley is obscured in E-02.",

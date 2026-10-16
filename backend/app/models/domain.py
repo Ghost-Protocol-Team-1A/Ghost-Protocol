@@ -176,6 +176,8 @@ class Claim(BaseModel):
     rationale: str
     links: list[EvidenceLink] = Field(default_factory=list)
     origin: str = "seed_analyst"
+    question_id: str | None = Field(default=None, description="The case question it bears on")
+    created_by: str | None = None
 
 
 class Hypothesis(BaseModel):
@@ -285,3 +287,80 @@ class ClockUpdate(BaseModel):
     anchors: dict[str, str] = Field(default_factory=dict, max_length=20)
     note: str = Field(default="", max_length=300)
     actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class Question(BaseModel):
+    """Something the case must establish. Conclusions answer questions, not claims."""
+
+    id: str
+    case_id: str
+    text: str
+    created_by: str
+    created_at: str
+
+
+class QuestionCreate(BaseModel):
+    text: str = Field(min_length=5, max_length=300)
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class ClaimCreate(BaseModel):
+    """A statement an investigator puts forward, with the evidence it rests on."""
+
+    statement: str = Field(min_length=5, max_length=300)
+    question_id: str | None = Field(default=None, pattern=r"^Q-\d{2}$")
+    state: ClaimState
+    rationale: str = Field(min_length=5, max_length=500)
+    links: list[EvidenceLink] = Field(default_factory=list, max_length=20)
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class Finding(StrEnum):
+    ESTABLISHED = "established"
+    PARTLY = "partly_established"
+    NOT_ESTABLISHED = "not_established"
+
+
+class Answer(BaseModel):
+    question_id: str = Field(pattern=r"^Q-\d{2}$")
+    finding: Finding
+    text: str = Field(min_length=20, max_length=2000)
+    cites: list[str] = Field(default_factory=list, max_length=40)
+
+
+class ConclusionCreate(BaseModel):
+    """A signed answer to every question. Signing needs both attestations."""
+
+    answers: list[Answer] = Field(min_length=1, max_length=30)
+    actor: str = Field(min_length=2, max_length=40)
+    role: str = Field(default="investigator", pattern="^(investigator|reviewer)$")
+    attest_sources_reviewed: bool
+    attest_unresolved_stated: bool
+
+
+class Conclusion(BaseModel):
+    id: str
+    case_id: str
+    version: int
+    answers: list[Answer]
+    signed_by: str
+    role: str
+    signed_at: str
+    supersedes: str | None = None
+
+
+class JourneyStep(BaseModel):
+    key: str
+    label: str
+    done: bool
+    detail: str
+    href: str
+
+
+class Journey(BaseModel):
+    case_id: str
+    steps: list[JourneyStep]
+    current: str
+    next_label: str
+    next_detail: str
+    next_href: str

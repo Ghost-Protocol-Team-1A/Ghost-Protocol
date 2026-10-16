@@ -20,6 +20,7 @@
   "claims": [
     {
       "id": "CL-07",
+      "question_id": "Q-03",
       "statement": "No vehicle left through the main gate between 21:10 and 21:30",
       "state": "supported",
       "rationale": "Recorded directly on E-07 for the whole 20-minute window.",
