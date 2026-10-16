@@ -32,5 +32,5 @@ export async function createCase(_prev: CreateCaseState, formData: FormData): Pr
     return { errors: {}, message: `Could not create the case: ${message}`, values: fields };
   }
   revalidatePath("/", "layout");
-  redirect(`/cases/${caseId}/evidence`);
+  redirect(`/cases/${caseId}`);
 }
