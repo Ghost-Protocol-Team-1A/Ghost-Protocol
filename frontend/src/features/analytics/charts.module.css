@@ -1,0 +1,246 @@
+/* Chart fills for claim states, validated on the #111317 surface (see design/README.md).
+   Badge colors elsewhere stay brighter; these are darker steps for large filled marks. */
+.viz {
+  --fill-contradicted: #e04a64;
+  --fill-unresolved: #b88a10;
+  --fill-inferred: #5a8af0;
+  --fill-supported: #6e9f22;
+  --fill-neutral: #8a929e;
+  --track: #1e2228;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gp-space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.sub {
+  margin: 0;
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-xs);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gp-space-2) var(--gp-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-soft);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.key {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: var(--gp-space-3);
+  align-items: center;
+}
+
+.rowLabel {
+  font-family: var(--gp-mono);
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hist {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+}
+
+.col {
+  flex: 1;
+  min-width: 2px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.colBar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--gp-lime);
+}
+
+.colEmpty {
+  width: 100%;
+  height: 2px;
+  background: var(--track);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  color: var(--gp-text-subtle);
+}
+
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+}
+
+.seg {
+  display: flex;
+  align-items: center;
+  min-width: 18px;
+  padding-left: 6px;
+  border-radius: 4px;
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #f2f4f7;
+}
+
+.contradicted {
+  background-color: var(--fill-contradicted);
+  background-image: repeating-linear-gradient(45deg, rgba(10, 11, 13, 0.45) 0 2px, transparent 2px 6px);
+}
+
+.unresolved {
+  background: var(--fill-unresolved);
+}
+
+.inferred {
+  background: var(--fill-inferred);
+}
+
+.supported {
+  background: var(--fill-supported);
+}
+
+/* Hover/focus tooltip with no script. Every mark is focusable and carries an aria-label. */
+.tip {
+  position: relative;
+  outline: none;
+}
+
+.tip:focus-visible {
+  box-shadow: 0 0 0 2px var(--gp-lime);
+}
+
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f2f4f7;
+  color: #0a0b0d;
+  font: 500 12px/1.3 var(--font-sans, inherit);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.tip:hover::after,
+.tip:focus-visible::after {
+  opacity: 1;
+}
+
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zero {
+  width: 2px;
+  height: 18px;
+  background: var(--gp-text);
+}
+
+.clockBar {
+  height: 14px;
+  background: var(--fill-neutral);
+  border-radius: 0 4px 4px 0;
+}
+
+.clockBarSlow {
+  border-radius: 4px 0 0 4px;
+}
+
+.heat {
+  display: grid;
+  gap: 3px;
+  align-items: center;
+}
+
+.cell {
+  height: 22px;
+  border-radius: 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--gp-text-sm);
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--gp-hairline);
+}
+
+.table th {
+  font-family: var(--gp-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gp-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tableToggle summary {
+  cursor: pointer;
+  font-size: var(--gp-text-xs);
+  color: var(--gp-text-muted);
+}
+
+.empty {
+  color: var(--gp-text-muted);
+  font-size: var(--gp-text-sm);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip::after {
+    transition: none;
+  }
+}
