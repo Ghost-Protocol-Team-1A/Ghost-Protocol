@@ -24,6 +24,11 @@ Know these before you present; judges will see them.
 | **⌘K search** | Top bar, or press `/` | Jump to any conflict, event, evidence item, or download the report. |
 | **Sign in with your name** | *Sign in* | A demo name, no password. Decisions appear under that name in the audit trail. |
 | **Uploads** | Intake | 33 formats, including iPhone voice memos, videos and photos. Checked against their bytes, hashed and playable. |
+| **Case journey** | Any case → Overview | Six steps from scope to a signed conclusion, with one "Next step" button. Works on a case the judge creates. |
+| **Extract** | Extract | Logs become events on upload; people log what recordings show; the AI proposes events from statements and photos for a person to accept. |
+| **Questions & conclusion** | Questions · Conclusion | Claims must match their citations; "Established" needs a supported claim; signing waits for every conflict to be decided. |
+| **AI assistant** | AI assistant | A cited case briefing and *Ask the case*, by Claude Sonnet 5.5. Invented citations are removed before anyone sees them. |
+| **Analytics** | Analytics | Six charts that follow the filters, and **Download for Power BI / Tableau** (an Excel workbook both tools open). |
 | **Public site** | Home, Platform, Services, Why, Resources, White paper | All pages exist; the landing page timeline is drawn live from the engine. |
 
 ## Roles
@@ -47,8 +52,10 @@ A suggestion; swap as the team prefers, but decide before the day.
    server can take up to a minute to wake; UptimeRobot normally keeps it awake.
 2. Open the dashboard and press **Reset demo**. Conflicts should read 3 open, E-07 waiting.
 3. Sign in as the presenter (any name, role Reviewer).
-4. Open the deck in another tab. Zoom the browser to 110–125% for the room.
-5. Have the local fallback ready (below) on a second machine if you can.
+4. Check the AI assistant says **on**. If it says off, `ANTHROPIC_API_KEY` is missing in Render; the
+   pitch still works, skip the AI stop.
+5. Open the deck in another tab. Zoom the browser to 110–125% for the room.
+6. Have the local fallback ready (below) on a second machine if you can.
 
 ## The five-minute run
 
@@ -62,12 +69,12 @@ A suggestion; swap as the team prefers, but decide before the day.
 | 2:00 | Tour stop 4: C-01 | A copied log row stamped before anyone arrived. Flagged by a named rule; "not proof of tampering". |
 | 2:20 | Tour stop 5: hypotheses | Three explanations, evidence for and against, no percentages. Record a decision with a reason. |
 | 2:45 | Tour stop 6: add **E-07** | New evidence: it says what changed and, as importantly, what did not. |
-| 3:15 | **Graph** (sidebar) | Point at C-01: only the two compared rows light up. |
-| 3:35 | Tour stop 7: report | Both times, every rule, unresolved questions kept in the export. |
-| 3:55 | Deck: proof, limits | 179 tests, identical results on repeated runs, a blind case. Be honest about the limits. |
+| 3:15 | **AI assistant** | Ask "When did the trolley pass the bay?" The answer cites EV-014 and C-02. Then ask "Who took the asset?" It says the records cannot tell. |
+| 3:35 | **Conclusion**, then report | Answer the three questions, sign under your name, open the report: the findings and the signature are in it. |
+| 3:55 | Deck: journey, AI, proof, limits | Any case runs end to end; AI that cites; 220 tests. Be honest about the limits. |
 | 4:30 | Deck: team, close | "Not another system telling you what happened, but one that shows you why." Invite them to try the link. |
 
-If time is short, skip the Graph and the proof slide. Never skip C-02 or the E-07 moment.
+If time is short, skip the AI stop and the proof slide. Show Analytics only if a judge asks about data. Never skip C-02 or the E-07 moment.
 
 ## If something goes wrong
 
@@ -91,8 +98,15 @@ cd frontend && npm ci && npm run dev
 
 ## Questions judges ask
 
-**Is this AI?** No model decides anything. The rules are fixed code with IDs; the same input gives
-the same output every time. We ran it ten times and got identical results.
+**Is this AI?** The engine is not: the rules are fixed code with IDs, and the same input gives the
+same output every time (ten runs, identical results). On top of it, Claude Sonnet 5.5 *assists*: it
+reads documents, compiles a briefing and answers questions, always citing records. Citations to
+records that don't exist are removed, quotes are checked word for word, and nothing the AI proposes
+reaches the timeline until a named person accepts it. It never decides.
+
+**Can I use it on my own case?** Yes. Create a case, upload logs, statements, photos or recordings,
+and the case overview walks you to a signed conclusion. Analytics downloads the data for Power BI
+or Tableau.
 
 **How does it know the camera is two minutes fast?** It looks for moments the camera shares with
 sources on a trusted clock: the bay door opening (also in the access log) and the alarm (also in
@@ -111,7 +125,7 @@ hashed and playable, but events are not yet extracted from them.
 **Why not just use a forensic suite?** They collect and index evidence at scale. We work on the
 step after: aligning clocks, naming contradictions, and keeping uncertainty in the report.
 
-**How is it tested?** 118 backend and 61 frontend tests run on every pull request, plus a blind
+**How is it tested?** 154 backend and 66 frontend tests run on every pull request, plus a blind
 case written by a teammate with the answers fixed before the data.
 
 **Is it secure?** It is a demo: sign-in is a name without a password and data is in memory.
