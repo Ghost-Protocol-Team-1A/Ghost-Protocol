@@ -8,6 +8,8 @@ dependencies = [
   "uvicorn[standard]>=0.30",
   "pydantic>=2.8",
   "python-multipart>=0.0.9",
+  "anthropic>=0.75",
+  "pypdf>=5",
 ]
 
 [project.optional-dependencies]
