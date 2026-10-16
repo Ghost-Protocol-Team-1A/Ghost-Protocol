@@ -364,3 +364,98 @@ class Journey(BaseModel):
     next_label: str
     next_detail: str
     next_href: str
+
+
+# --- AI assistance: suggestions and drafts that a person accepts or rejects ---------------------
+
+
+class Suggestion(BaseModel):
+    """An event the AI read in a document. Not evidence until a person accepts it."""
+
+    id: str
+    case_id: str
+    evidence_id: str
+    locator: str
+    quote: str
+    description: str
+    proposed_time: str | None = None
+    approximate_seconds: int = 0
+    date_assumed: bool = False
+    quote_verified: bool | None = Field(
+        default=None, description="Quote found word for word in the document text; null for images"
+    )
+    status: str = "pending"
+    model: str
+    created_at: str
+    decided_by: str | None = None
+    decided_at: str | None = None
+    reason: str = ""
+    event_id: str | None = None
+
+
+class SuggestionDecision(BaseModel):
+    action: str = Field(pattern="^(accept|reject)$")
+    description: str | None = Field(default=None, min_length=3, max_length=300)
+    proposed_time: AwareDatetime | None = None
+    reason: str = Field(default="", max_length=300)
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class CitedPoint(BaseModel):
+    text: str
+    cites: list[str]
+
+
+class Briefing(BaseModel):
+    """A compiled overview written by the AI from the case's own records, every point cited."""
+
+    id: str
+    case_id: str
+    model: str
+    created_at: str
+    created_by: str
+    summary: list[CitedPoint]
+    key_facts: list[CitedPoint]
+    open_questions: list[CitedPoint]
+    next_steps: list[str]
+    removed: int = Field(default=0, description="Points dropped because a citation did not exist")
+
+
+class AiRequest(BaseModel):
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=3, max_length=500)
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class AskAnswer(BaseModel):
+    question: str
+    can_answer: bool
+    answer: str
+    cites: list[str]
+    removed: int = 0
+    model: str
+    created_at: str
+
+
+class DraftRequest(BaseModel):
+    question_id: str = Field(pattern=r"^Q-\d{2}$")
+    actor: str = Field(default="BJ", min_length=1, max_length=40)
+
+
+class Draft(BaseModel):
+    """Suggested wording for one answer. A starting point; it is never signed as is."""
+
+    question_id: str
+    finding: Finding
+    text: str
+    cites: list[str]
+    removed: int = 0
+    model: str
+
+
+class AiStatus(BaseModel):
+    configured: bool
+    model: str

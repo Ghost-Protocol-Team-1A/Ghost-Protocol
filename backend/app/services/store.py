@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 
 from app.models.domain import (
     AuditEvent,
+    Briefing,
     Case,
     CaseSummary,
     ChangeSummary,
@@ -27,6 +28,7 @@ from app.models.domain import (
     ReviewNote,
     ReviewStatus,
     StagedItem,
+    Suggestion,
 )
 from app.services.ingest import load_seed, load_staged, staged_ids
 from app.services.normalize import normalize
@@ -59,6 +61,8 @@ class CaseData:
         self.audit: list[AuditEvent] = seed.audit
         self.questions: list[Question] = seed.questions
         self.conclusions: list[Conclusion] = []
+        self.suggestions: list[Suggestion] = []
+        self.briefings: list[Briefing] = []
         self.files = seed.files
         self.authoritative_for = seed.authoritative_for
         self.changes: list[ChangeSummary] = []
@@ -76,6 +80,7 @@ class CaseData:
         data.case = case
         data.evidence, data.claims, data.hypotheses = [], [], []
         data.questions, data.conclusions = [], []
+        data.suggestions, data.briefings = [], []
         data.files, data.authoritative_for, data.changes = {}, {}, []
         data.conflict_reviews = {}
         data.events, data.conflicts = [], []
