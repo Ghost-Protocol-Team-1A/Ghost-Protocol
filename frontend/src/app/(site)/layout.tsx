@@ -6,6 +6,7 @@ const NAV = [
   { href: "/platform", label: "Platform" },
   { href: "/services", label: "Services" },
   { href: "/why", label: "Why Ghost Protocol" },
+  { href: "/guide", label: "Guide" },
   { href: "/resources", label: "Resources" },
   { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact" },
