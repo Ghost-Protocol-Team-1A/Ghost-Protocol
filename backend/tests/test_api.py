@@ -139,14 +139,18 @@ def test_create_case_rejects_bad_input(client, payload):
     assert res.json()["error"]["code"] == "invalid_request"
 
 
-def test_reset_removes_created_cases(client):
+def test_reset_restores_the_demo_case_and_keeps_investigators_cases(client):
     client.post(
         "/api/cases",
-        json={"title": "Temporary", "incident_start": "2026-10-12T08:00:00+01:00",
+        json={"title": "Kept", "incident_start": "2026-10-12T08:00:00+01:00",
               "incident_end": "2026-10-12T09:00:00+01:00"},
     )
-    client.post("/api/demo/reset")
-    assert [c["case"]["id"] for c in client.get("/api/cases").json()] == ["CASE-001"]
+    client.post("/api/cases/CASE-001/staged/E-07")
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 7
+    res = client.post("/api/demo/reset").json()
+    assert res["cases"] == ["CASE-001"]
+    assert [c["case"]["id"] for c in client.get("/api/cases").json()] == ["CASE-001", "CASE-002"]
+    assert client.get("/api/cases/CASE-001").json()["evidence_count"] == 6
 
 
 # --- evidence upload: the storage checks end to end through the API ---------------------------
