@@ -1,17 +1,27 @@
 import type {
+  AiStatus,
+  Answer,
   ApiErrorBody,
+  AskAnswer,
   AuditEvent,
+  Briefing,
   CaseSummary,
   ChangeSummary,
   Claim,
+  ClaimState,
+  Conclusion,
   Conflict,
+  Draft,
   EvidenceItem,
   EvidenceUpload,
   Hypothesis,
+  Journey,
   NewCase,
   NewReview,
   OriginalRecord,
+  Question,
   StagedItem,
+  Suggestion,
   TimelineEvent,
 } from "./types";
 
@@ -28,7 +38,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, method: "GET" | "POST" = "GET", body?: unknown): Promise<T> {
+async function request<T>(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method,
     cache: "no-store",
@@ -47,6 +57,8 @@ async function request<T>(path: string, method: "GET" | "POST" = "GET", body?: u
 }
 
 const get = <T>(path: string) => request<T>(path);
+
+const post = <T>(path: string, body: unknown) => request<T>(path, "POST", body);
 
 export const api = {
   cases: () => get<CaseSummary[]>("/api/cases"),
@@ -88,6 +100,58 @@ export const api = {
   /** Download link for the report. Served by the website, which fetches it from the API. */
   reportUrl: (id: string, format: "md" | "json") => `/cases/${id}/report/download?format=${format}`,
   /** Raw report response from the API, for the download route to pass through. */
+  journey: (id: string) => get<Journey>(`/api/cases/${id}/journey`),
+  questions: (id: string) => get<Question[]>(`/api/cases/${id}/questions`),
+  addQuestion: (id: string, body: { text: string; actor?: string }) => post<Question>(`/api/cases/${id}/questions`, body),
+  addClaim: (
+    id: string,
+    body: {
+      statement: string;
+      question_id?: string | null;
+      state: ClaimState;
+      rationale: string;
+      links: { evidence_id: string; locator?: string | null; relationship: "supports" | "contradicts" }[];
+      actor?: string;
+    },
+  ) => post<Claim>(`/api/cases/${id}/claims`, body),
+  conclusions: (id: string) => get<Conclusion[]>(`/api/cases/${id}/conclusions`),
+  signConclusion: (
+    id: string,
+    body: { answers: Answer[]; actor: string; role: string; attest_sources_reviewed: boolean; attest_unresolved_stated: boolean },
+  ) => post<Conclusion>(`/api/cases/${id}/conclusions`, body),
+  addObservation: (
+    id: string,
+    evidenceId: string,
+    body: { timecode: string; description: string; source_time?: string; interpretation?: boolean; actor?: string },
+  ) => post<{ event: TimelineEvent; change: ChangeSummary }>(`/api/cases/${id}/evidence/${evidenceId}/observations`, body),
+  setClock: (
+    id: string,
+    evidenceId: string,
+    body: { method: "reference_clock" | "declared" | "anchors"; offset_seconds?: number; anchors?: Record<string, string>; note?: string; actor?: string },
+  ) => request<ChangeSummary>(`/api/cases/${id}/evidence/${evidenceId}/clock`, "PUT", body),
+  aiStatus: () => get<AiStatus>("/api/ai/status"),
+  suggestions: (id: string) => get<Suggestion[]>(`/api/cases/${id}/suggestions`),
+  suggest: (id: string, evidenceId: string, actor?: string) =>
+    post<Suggestion[]>(`/api/cases/${id}/evidence/${evidenceId}/suggestions`, { actor }),
+  decide: (
+    id: string,
+    suggestionId: string,
+    body: { action: "accept" | "reject"; description?: string; proposed_time?: string; reason?: string; actor?: string },
+  ) => post<{ suggestion: Suggestion; change: ChangeSummary | null }>(`/api/cases/${id}/suggestions/${suggestionId}`, body),
+  briefing: async (id: string): Promise<Briefing | null> => {
+    try {
+      return await get<Briefing>(`/api/cases/${id}/briefing`);
+    } catch (err) {
+      if (err instanceof ApiError && err.code === "no_briefing") return null;
+      throw err;
+    }
+  },
+  compileBriefing: (id: string, actor?: string) => post<Briefing>(`/api/cases/${id}/briefing`, { actor }),
+  ask: (id: string, question: string, actor?: string) => post<AskAnswer>(`/api/cases/${id}/ask`, { question, actor }),
+  draft: (id: string, questionId: string, actor?: string) =>
+    post<Draft>(`/api/cases/${id}/conclusion-draft`, { question_id: questionId, actor }),
+  exportFile: (id: string, format: "xlsx" | "zip") =>
+    fetch(`${BASE}/api/cases/${id}/export?format=${format}`, { cache: "no-store" }),
   reportFile: (id: string, format: "md" | "json") =>
     fetch(`${BASE}/api/cases/${id}/report?format=${format}`, { cache: "no-store" }),
   /** Original bytes of an evidence item, passing a Range header through for media seeking. */
