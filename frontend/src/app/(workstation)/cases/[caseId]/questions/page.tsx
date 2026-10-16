@@ -2,7 +2,6 @@ import Link from "next/link";
 import { StateBadge } from "@/components/StateBadge";
 import panel from "@/components/panel.module.css";
 import { ClaimForm, QuestionForm } from "@/features/workbench/Forms";
-import { Stepper } from "@/features/workbench/Stepper";
 import w from "@/features/workbench/workbench.module.css";
 import { api, ApiError } from "@/lib/api";
 
@@ -33,7 +32,6 @@ export default async function QuestionsPage({ params }: { params: Promise<{ case
           match its citations, so nothing is called supported without a source.
         </p>
       </div>
-      <Stepper journey={journey} />
 
       <div className={w.split}>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--gp-space-4)" }}>
