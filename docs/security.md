@@ -30,6 +30,7 @@ demo only.**
 - **No authentication or authorization.** Anyone who can reach the app can read every case,
   upload evidence, record reviews and reset the demo. The reviewer name on decisions comes from the demo sign-in (a cookie, no password) or defaults to `BJ`, and is not verified.
 - **Accepted formats** cover common phone, camera and office output (33 extensions: MP4/MOV/WebM video, M4A/MP3/WAV/AAC/OGG/Opus/AMR audio, JPEG/HEIC/PNG images, PDF/DOCX/XLSX, CSV/JSON/text). Each is checked against its byte signature. Uploaded media is stored and playable but **not yet extracted** into timeline events.
+- **AI assistance (Claude Sonnet 5.5) is optional and never decides.** With `ANTHROPIC_API_KEY` set, documents, the case's records and questions are sent to Anthropic's API. Every AI output is checked server-side: citations must name records that exist (otherwise the point is dropped and counted), quotes are matched word for word against the document text, and nothing reaches the timeline until a named person accepts it. Each use is written to the audit trail. Do not enable it for data your organisation may not send to a third-party processor.
 - **No encryption at rest.** Uploaded files are stored as plain files on the server's disk.
 - **No persistence guarantees.** Cases and the audit trail live in memory and are lost on restart
   or reset. The audit trail is append-only in code, but not tamper-evident.
