@@ -3,6 +3,7 @@ import { StateBadge } from "@/components/StateBadge";
 import panel from "@/components/panel.module.css";
 import { api, ApiError, localTime } from "@/lib/api";
 import { OriginalPreview } from "@/features/evidence/OriginalPreview";
+import { ClockForm } from "@/features/workbench/Forms";
 import { clockLabel, extractionLabel, formatBytes, rowsWithEvents } from "@/lib/evidence";
 import { conflictTitle } from "@/lib/labels";
 import styles from "./evidence.module.css";
@@ -194,6 +195,25 @@ export default async function EvidencePage({
           </p>
         )}
       </section>
+      {!item.simulated && (
+        <section id="clock" className={panel.panel} aria-labelledby="clock-heading" style={{ marginTop: "var(--gp-space-6)" }}>
+          <h2 id="clock-heading" className={panel.panelTitle}>
+            Source clock · {item.id}
+          </h2>
+          <p className={panel.panelCaption}>
+            Now: {clockLabel(item.clock)}
+            {item.clock.note ? ` · ${item.clock.note}` : ""}. Original times never change; only normalized time is re-worked.
+          </p>
+          <ClockForm
+            caseId={caseId}
+            item={item}
+            ownEvents={linked}
+            trustedEvents={events.filter((e) =>
+              evidence.some((x) => x.id === e.evidence_id && x.id !== item.id && x.clock.method === "reference_clock"),
+            )}
+          />
+        </section>
+      )}
     </section>
   );
 }

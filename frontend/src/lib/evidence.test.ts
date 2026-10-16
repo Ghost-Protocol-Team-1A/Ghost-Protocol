@@ -21,6 +21,10 @@ describe("evidence helpers", () => {
     expect(clockLabel({ offset_seconds: 120, method: "inferred_from_anchors", note: "" })).toBe(
       "Runs 120 s fast · inferred from anchors",
     );
+    expect(clockLabel({ offset_seconds: 0, method: "not_set", note: "" })).toMatch(/^Not verified/);
+    expect(clockLabel({ offset_seconds: -90, method: "declared_by_investigator", note: "" })).toBe(
+      "Runs 90 s slow · declared by an investigator",
+    );
     expect(clockLabel({ offset_seconds: 0, method: "reference_clock", note: "" })).toBe(
       "Reference clock · no offset",
     );
