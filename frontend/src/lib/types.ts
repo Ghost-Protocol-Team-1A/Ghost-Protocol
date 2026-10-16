@@ -52,10 +52,14 @@ export interface EvidenceItem {
     spread_seconds?: number;
   };
   simulated: boolean;
+  /** Start time stored in the media file itself; not verified. */
+  recorded_at?: string | null;
+  extraction_note?: string;
 }
 
 export interface EvidenceUpload extends EvidenceItem {
   duplicate: boolean;
+  change?: ChangeSummary | null;
 }
 
 export interface TimelineEvent {
@@ -72,6 +76,8 @@ export interface TimelineEvent {
   uncertainty_seconds: number;
   state: ClaimState;
   record: Record<string, string>;
+  /** Who added it, for observations and accepted AI suggestions. */
+  extracted_by?: string | null;
 }
 
 export type ReviewStatus = "open" | "under_review" | "resolved" | "dismissed";
@@ -114,6 +120,8 @@ export interface Claim {
   rationale: string;
   links: EvidenceLink[];
   origin: string;
+  question_id?: string | null;
+  created_by?: string | null;
 }
 
 export interface Hypothesis {
@@ -176,4 +184,111 @@ export interface ChangeSummary {
 
 export interface ApiErrorBody {
   error: { code: string; message: string; details: Record<string, unknown> };
+}
+
+export interface Question {
+  id: string;
+  case_id: string;
+  text: string;
+  created_by: string;
+  created_at: string;
+}
+
+export type Finding = "established" | "partly_established" | "not_established";
+
+export interface Answer {
+  question_id: string;
+  finding: Finding;
+  text: string;
+  cites: string[];
+}
+
+export interface Conclusion {
+  id: string;
+  case_id: string;
+  version: number;
+  answers: Answer[];
+  signed_by: string;
+  role: string;
+  signed_at: string;
+  supersedes: string | null;
+}
+
+export interface JourneyStep {
+  key: "scope" | "evidence" | "extract" | "timeline" | "questions" | "conclude";
+  label: string;
+  done: boolean;
+  detail: string;
+  href: string;
+}
+
+export interface Journey {
+  case_id: string;
+  steps: JourneyStep[];
+  current: JourneyStep["key"];
+  next_label: string;
+  next_detail: string;
+  next_href: string;
+}
+
+export interface Suggestion {
+  id: string;
+  case_id: string;
+  evidence_id: string;
+  locator: string;
+  quote: string;
+  description: string;
+  proposed_time: string | null;
+  approximate_seconds: number;
+  date_assumed: boolean;
+  quote_verified: boolean | null;
+  status: "pending" | "accepted" | "rejected";
+  model: string;
+  created_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  reason: string;
+  event_id: string | null;
+}
+
+export interface CitedPoint {
+  text: string;
+  cites: string[];
+}
+
+export interface Briefing {
+  id: string;
+  case_id: string;
+  model: string;
+  created_at: string;
+  created_by: string;
+  summary: CitedPoint[];
+  key_facts: CitedPoint[];
+  open_questions: CitedPoint[];
+  next_steps: string[];
+  removed: number;
+}
+
+export interface AskAnswer {
+  question: string;
+  can_answer: boolean;
+  answer: string;
+  cites: string[];
+  removed: number;
+  model: string;
+  created_at: string;
+}
+
+export interface Draft {
+  question_id: string;
+  finding: Finding;
+  text: string;
+  cites: string[];
+  removed: number;
+  model: string;
+}
+
+export interface AiStatus {
+  configured: boolean;
+  model: string;
 }
